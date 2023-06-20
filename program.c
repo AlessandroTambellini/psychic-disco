@@ -53,6 +53,8 @@ int program_inc_capacity(Program *program) {
     return 1;
 }
 
+// Pointer to program cause we may need to
+// re-allocate the Instruction vector;
 int program_add(Program *program, Instruction inst) {
     if (program->size == program->capacity) {
         if (!program_inc_capacity(program)) {

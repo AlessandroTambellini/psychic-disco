@@ -4,10 +4,10 @@
 typedef struct Instruction Instruction;
 
 struct Instruction {
-    int code;
-    int dest;
-    int arg1;
-    int arg2;
+    unsigned int code;
+    unsigned int dest;
+    unsigned int arg1;
+    unsigned int arg2;
 };
 
 typedef struct Program Program;

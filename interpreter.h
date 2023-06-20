@@ -4,17 +4,28 @@
 #include "stddef.h"
 #include "program.h"
 
-const int data_size = 1000;
+#define DATA_SIZE 1000
 
 typedef struct Interpreter Interpreter;
 
 struct Interpreter {
     Program program;
-    int data[data_size];
     int counter;
+    int data[DATA_SIZE];
 };
 
-void execute(Interpreter);
-Instruction *fetch(Interpreter);
+// Memory
+void memory_print(Interpreter *);
+
+// Fetch-execute loop
+void loop(Interpreter *);
+Instruction *fetch(Interpreter *);
+void execute(Interpreter *, Instruction *);
+
+// Instruction body
+void add(Interpreter *, Instruction *);
+void addi(Interpreter *, Instruction *);
+void sub(Interpreter *, Instruction *);
+void subi(Interpreter *, Instruction *);
 
 #endif
