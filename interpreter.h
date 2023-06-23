@@ -23,9 +23,9 @@ Instruction *fetch(Interpreter *);
 void execute(Interpreter *, Instruction *);
 
 // Instruction body
-void add(Interpreter *, Instruction *);
-void addi(Interpreter *, Instruction *);
-void sub(Interpreter *, Instruction *);
-void subi(Interpreter *, Instruction *);
+void add(Interpreter *intprt, int dest, int arg1, int arg2);
+void addi(Interpreter *intprt, int dest, int arg1, int arg2);
+void sub(Interpreter *intprt, int dest, int arg1, int arg2);
+void subi(Interpreter *intprt, int dest, int arg1, int arg2);
 
 #endif
