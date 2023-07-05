@@ -27,5 +27,10 @@ void add(Interpreter *intprt, int dest, int arg1, int arg2);
 void addi(Interpreter *intprt, int dest, int arg1, int arg2);
 void sub(Interpreter *intprt, int dest, int arg1, int arg2);
 void subi(Interpreter *intprt, int dest, int arg1, int arg2);
+void movi(Interpreter *intprt, int dest, int arg1);
+void beq(Interpreter *intprt, int dest, int arg1, int arg2);
+void beqi(Interpreter *intprt, int dest, int arg1, int arg2);
+void bne(Interpreter *intprt, int dest, int arg1, int arg2);
+void bnei(Interpreter *intprt, int dest, int arg1, int arg2);
 
 #endif

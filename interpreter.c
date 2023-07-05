@@ -44,8 +44,13 @@ void execute(Interpreter *intprt, Instruction *inst)
         case 1: addi(intprt, dest, arg1, arg2); break;
         case 2: sub(intprt, dest, arg1, arg2); break;
         case 3: subi(intprt, dest, arg1, arg2); break;
-        case 4: printf("Instruction 4 not yet implemented.\n"); break;
-        case 5: printf("Instruction 5 not yet implemented.\n"); break;
+        case 4: addi(intprt, dest, arg1, 0); break; // mov implementation
+        case 5: movi(intprt, dest, arg1); break;
+        case 6: beq(intprt, dest, 0, 0); break; // b implementation
+        case 7: beq(intprt, dest, arg1, arg2); break;
+        case 8: beqi(intprt, dest, arg1, arg2); break;
+        case 9: bne(intprt, dest, arg1, arg2); break;
+        case 10: bnei(intprt, dest, arg1, arg2); break;
         default: printf("default\n"); break;
     }
 }
@@ -65,4 +70,32 @@ void sub(Interpreter *intprt, int dest, int arg1, int arg2) {
 
 void subi(Interpreter *intprt, int dest, int arg1, int arg2) {
     intprt->data[dest] = intprt->data[arg1] - arg2;
+}
+
+void movi(Interpreter *intprt, int dest, int arg1) {
+    intprt->data[dest] = arg1;
+}
+
+void beq(Interpreter *intprt, int dest, int arg1, int arg2) {
+    if (arg1 == arg2)
+        intprt->counter = dest;
+    else if (intprt->data[arg1] == intprt->data[arg2])
+        intprt-> counter = dest;
+}
+
+void beqi(Interpreter *intprt, int dest, int arg1, int arg2) {
+    if (intprt->data[arg1] == arg2)
+        intprt->counter = dest;
+}
+
+void bne(Interpreter *intprt, int dest, int arg1, int arg2) {
+    if (arg1 != arg2
+        && intprt->data[arg1] != intprt->data[arg2])
+        intprt-> counter = dest;
+}
+
+void bnei(Interpreter *intprt, int dest, int arg1, int arg2) {
+    if (intprt->data[arg1] != arg2) {
+        intprt->counter = dest;
+    }
 }
