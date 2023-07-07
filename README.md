@@ -1,5 +1,1 @@
 # psychic-disco
-
-## Description
-
-### Commands
