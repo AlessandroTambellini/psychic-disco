@@ -34,20 +34,15 @@ size_t program_size(Program *program) {
 }
 
 int program_inc_capacity(Program *program) {
-    Instruction *v_old = program->v;
-
     size_t capacity_new = 2 * program->capacity;
 
-    program->v = (Instruction *) malloc(capacity_new * sizeof(Instruction));
-    if (program->v == NULL)
+    Instruction *v_new = realloc(program->v, capacity_new * sizeof(Instruction));
+    if (v_new == NULL) {
+        printf("Memory reallocation failed!\n");
         return 0;
-
-    for (size_t i = 0; i < program->size; i++) {
-        program->v[i] = v_old[i];
     }
 
-    free(v_old);
-
+    program->v = v_new;
     program->capacity = capacity_new;
 
     return 1;
