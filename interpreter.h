@@ -15,7 +15,7 @@ struct Interpreter
     int *data;
 };
 
-int intprt_init(Interpreter *intprt, Program program);
+int intprt_init(Interpreter *intprt, Program program, unsigned long long *intptr_mem);
 // Memory
 void memory_print(Interpreter *);
 

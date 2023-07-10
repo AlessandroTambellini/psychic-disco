@@ -4,7 +4,7 @@
 #include "interpreter.h"
 #include "program.h"
 
-int intprt_init(Interpreter *intprt, Program program)
+int intprt_init(Interpreter *intprt, Program program, unsigned long long *intprt_mem)
 {
     intprt->program = program;
     intprt->counter = 0;
@@ -13,8 +13,9 @@ int intprt_init(Interpreter *intprt, Program program)
     status.dwLength = sizeof(status);
     if (GlobalMemoryStatusEx(&status))
     {
-        unsigned long long intprt_mem = status.ullAvailPhys;
-        intprt->data = (int *)malloc(intprt_mem);
+        printf("status.ullAvaiablePhys: %llu\n", status.ullAvailPhys);
+        *intprt_mem = (unsigned long long)status.ullAvailPhys;
+        intprt->data = (int *)malloc(*intprt_mem);
     }
     else
     {
@@ -66,6 +67,7 @@ void execute(Interpreter *intprt, Instruction *inst)
     int dest = inst->dest;
     int arg1 = inst->arg1;
     int arg2 = inst->arg2;
+
     switch (inst->code)
     {
     case 0:
