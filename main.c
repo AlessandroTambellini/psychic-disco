@@ -3,15 +3,16 @@
 #include "program.h"
 #include "interpreter.h"
 
-int main() {
+int main()
+{
     // Creating program
     Program program;
     program_init(&program);
 
-    Instruction i1 = { 5, 0, 0, 0 };
-    Instruction i2 = { 8, 200, 0, 420 };
-    Instruction i3 = { 1, 0, 0, 1 };
-    Instruction i4 = { 10, 1, 0, 420 };
+    Instruction i1 = {5, 0, 0, 0};
+    Instruction i2 = {8, 200, 0, 420};
+    Instruction i3 = {1, 0, 0, 1};
+    Instruction i4 = {10, 1, 0, 420};
 
     program_add(&program, i1);
     program_add(&program, i2);
@@ -20,8 +21,7 @@ int main() {
 
     // Creating interpreter
     Interpreter intprt;
-    intprt.program = program;
-    intprt.counter = 0;
+    intprt_init(&intprt, program);
 
     // Fetch-execute loop
     loop(&intprt);

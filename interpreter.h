@@ -8,12 +8,14 @@
 
 typedef struct Interpreter Interpreter;
 
-struct Interpreter {
+struct Interpreter
+{
     Program program;
     int counter;
-    int data[DATA_SIZE];
+    int *data;
 };
 
+int intprt_init(Interpreter *intprt, Program program);
 // Memory
 void memory_print(Interpreter *);
 
