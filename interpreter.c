@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#ifdef __linux__
+#ifdef __unix__
 #include <sys/sysinfo.h>
 #else
 #include <windows.h>
@@ -14,7 +14,7 @@ int intprt_init(Interpreter *intprt, Program program, unsigned long long *intprt
     intprt->program = program;
     intprt->counter = 0;
 
-#ifdef __linux__
+#ifdef __unix__
 
     struct sysinfo sys_info;
     int res = sysinfo(&sys_info);
