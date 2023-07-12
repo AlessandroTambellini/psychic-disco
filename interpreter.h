@@ -8,8 +8,7 @@
 
 typedef struct Interpreter Interpreter;
 
-struct Interpreter
-{
+struct Interpreter {
     Program program;
     int counter;
     int *data;
