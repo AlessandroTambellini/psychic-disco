@@ -21,6 +21,7 @@ int intprt_init(Interpreter *intprt, Program program, unsigned long long *intprt
     if (res != -1)
     {
         *intprt_mem = (unsigned long)sys_info.freeram;
+        intprt->data = (int *)malloc(*intprt_mem);
     }
     else
     {
