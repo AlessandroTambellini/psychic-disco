@@ -3,19 +3,21 @@
 
 typedef struct Instruction Instruction;
 
-struct Instruction {
-    unsigned int code;
-    unsigned int dest;
-    unsigned int arg1;
-    unsigned int arg2;
+struct Instruction
+{
+    unsigned int code; // always positive. code -> instruction
+    int dest;          // it is always a memory address (fake)
+    int arg1;
+    int arg2;
 };
 
 typedef struct Program Program;
 
-struct Program {
+struct Program
+{
     Instruction *v;
     size_t capacity; // maximum size before re-init
-    size_t size; // current Actions size
+    size_t size;     // current Actions size
 };
 
 int program_init(Program *);

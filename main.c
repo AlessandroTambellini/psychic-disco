@@ -26,15 +26,14 @@ int main()
     intprt_init(&intprt, program, &intprt_mem);
     printf("intprt_mem: %llu\n", intprt_mem);
 
-    // check all the instructions are valid after the memory for the interpreter is
-    // allocated and before executing the program
+    // check dest address < intprt max address
     for (int i = 0; i < program.size; i++)
     {
         Instruction *inst = program_fetch(&intprt.program, i);
-        if (inst->dest >= intprt_mem || inst->arg1 >= intprt_mem || inst->arg2 >= intprt_mem)
+        if (inst->dest >= intprt_mem)
         {
-            printf("Error in instruction {%d, %d, %d, %d}. At least one among dest, arg1, arg2 "
-                   "exceeds the memory address limit.",
+            printf("Error in instruction {%d, %d, %d, %d}. The destination address "
+                   "exceeds the address limit.",
                    inst->code, inst->dest, inst->arg1, inst->arg2);
             exit(1);
             // TODO: ask the user to insert the istructions again instead of exiting the program

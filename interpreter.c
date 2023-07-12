@@ -92,6 +92,12 @@ void execute(Interpreter *intprt, Instruction *inst)
     int arg1 = inst->arg1;
     int arg2 = inst->arg2;
 
+    if (dest < 0)
+    {
+        printf("The destination address cannot be negative.\n");
+        return; // skip this instruction
+    }
+
     switch (inst->code)
     {
     case 0:
@@ -133,25 +139,57 @@ void execute(Interpreter *intprt, Instruction *inst)
     }
 }
 
+int are_args_valid(int arg1, int arg2)
+{
+    if (arg1 < 0 || arg2 < 0)
+    {
+        printf("Error: negarive address in ADD instruction.\n");
+        return 0;
+    }
+    return 1;
+}
+
+int is_arg_valid(int arg1)
+{
+    if (arg1 < 0)
+    {
+        printf("Error: negative address in ADDI instruction.\n");
+        return 0;
+    }
+    return 1;
+}
+
 // Instructions
 void add(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] + intprt->data[arg2];
+    if (are_args_valid(arg1, arg2))
+    {
+        intprt->data[dest] = intprt->data[arg1] + intprt->data[arg2];
+    }
 }
 
 void addi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] + arg2;
+    if (is_arg_valid(arg1))
+    {
+        intprt->data[dest] = intprt->data[arg1] + arg2;
+    }
 }
 
 void sub(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] - intprt->data[arg2];
+    if (are_args_valid(arg1, arg2))
+    {
+        intprt->data[dest] = intprt->data[arg1] - intprt->data[arg2];
+    }
 }
 
 void subi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] - arg2;
+    if (is_arg_valid(arg1))
+    {
+        intprt->data[dest] = intprt->data[arg1] - arg2;
+    }
 }
 
 void movi(Interpreter *intprt, int dest, int arg1)
@@ -161,28 +199,40 @@ void movi(Interpreter *intprt, int dest, int arg1)
 
 void beq(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (arg1 == arg2)
-        intprt->counter = dest;
+    if (arg1 < 0 || arg2 < 0)
+    {
+        if (arg1 == arg2)
+            intprt->counter = dest;
+    }
     else if (intprt->data[arg1] == intprt->data[arg2])
         intprt->counter = dest;
 }
 
 void beqi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (intprt->data[arg1] == arg2)
-        intprt->counter = dest;
+    if (is_arg_valid(arg1))
+    {
+        if (intprt->data[arg1] == arg2)
+            intprt->counter = dest;
+    }
 }
 
 void bne(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (arg1 != arg2 && intprt->data[arg1] != intprt->data[arg2])
-        intprt->counter = dest;
+    if (are_args_valid(arg1, arg2))
+    {
+        if (arg1 != arg2 && intprt->data[arg1] != intprt->data[arg2])
+            intprt->counter = dest;
+    }
 }
 
 void bnei(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (intprt->data[arg1] != arg2)
+    if (is_arg_valid(arg1))
     {
-        intprt->counter = dest;
+        if (intprt->data[arg1] != arg2)
+        {
+            intprt->counter = dest;
+        }
     }
 }
