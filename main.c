@@ -15,7 +15,6 @@ int main()
     Instruction i3 = {1, 0, 0, 1};
     Instruction i4 = {10, 1, 0, 420};
 
-    // TODO: general memory limit
     program_add(&program, i1);
     program_add(&program, i2);
     program_add(&program, i3);

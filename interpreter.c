@@ -1,5 +1,10 @@
 #include <stdio.h>
+
+#ifdef __linux__
+#include <sys/sysinfo.h>
+#else
 #include <windows.h>
+#endif
 
 #include "interpreter.h"
 #include "program.h"
@@ -8,6 +13,22 @@ int intprt_init(Interpreter *intprt, Program program, unsigned long long *intprt
 {
     intprt->program = program;
     intprt->counter = 0;
+
+#ifdef __linux__
+
+    struct sysinfo sys_info;
+    int res = sysinfo(&sys_info);
+    if (res != -1)
+    {
+        *intprt_mem = (unsigned long)sys_info.freeram;
+    }
+    else
+    {
+        printf("Failed to allocate interpreter memory.\n");
+        return 0;
+    }
+
+#else
 
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
@@ -22,6 +43,8 @@ int intprt_init(Interpreter *intprt, Program program, unsigned long long *intprt
         printf("Failed to allocate interpreter memory.\n");
         return 0;
     }
+
+#endif
 
     return 1;
 }
