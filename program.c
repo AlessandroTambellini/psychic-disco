@@ -21,8 +21,7 @@ int program_deinit(Program *program)
 
     if (program->v == NULL) {
         return 0;
-    }
-    else {
+    } else {
         free(program->v);
     }
 

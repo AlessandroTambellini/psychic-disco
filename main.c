@@ -3,15 +3,16 @@
 #include "program.h"
 #include "interpreter.h"
 
-int main() {
+int main()
+{
     // Creating program
     Program program;
     program_init(&program);
 
-    Instruction i1 = { 5, 0, 0, 0 };
-    Instruction i2 = { 8, 27, 0, 420 };
-    Instruction i3 = { 1, 0, 0, 1 };
-    Instruction i4 = { 6, 1, 0, 0 };
+    Instruction i1 = { MOVI, 0, 0, 0 };
+    Instruction i2 = { BEQI, 200, 0, 420 };
+    Instruction i3 = { ADDI, 0, 0, 1 };
+    Instruction i4 = { BEQ, 1, 0, 0 };
 
     program_add(&program, i1);
     program_add(&program, i2);
