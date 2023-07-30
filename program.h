@@ -1,22 +1,33 @@
 #ifndef ACTIONS_H
 #define ACTIONS_H
 
-typedef struct Instruction Instruction;
+// typedef enum op {
+//     ADD,
+//     ADDI,
+//     SUB,
+//     SUBI,
+//     MOV,
+//     MOVI,
+//     B,
+//     BEQ,
+//     BEQI,
+//     BNE,
+//     BNEI
+// };
 
-struct Instruction {
+typedef struct {
+    // op code;
     unsigned int code;
     unsigned int dest;
     unsigned int arg1;
     unsigned int arg2;
-};
+} Instruction;
 
-typedef struct Program Program;
-
-struct Program {
+typedef struct {
     Instruction *v;
     size_t capacity; // maximum size before re-init
     size_t size; // current Actions size
-};
+} Program;
 
 int program_init(Program *);
 int program_deinit(Program *);

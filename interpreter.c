@@ -4,7 +4,8 @@
 #include "program.h"
 
 // Memory
-void memory_print(Interpreter *intprt) {
+void memory_print(Interpreter *intprt)
+{
     int limit = 20;
     for (int i = 0; i < limit && i < DATA_SIZE; i++) {
         printf("[%i]: %i\n", i, intprt->data[i]);
@@ -12,7 +13,8 @@ void memory_print(Interpreter *intprt) {
 }
 
 // Fetch-execute loop
-void loop(Interpreter *intprt) {
+void loop(Interpreter *intprt)
+{
     Instruction *inst;
 
     while (intprt->counter < intprt->program.size) {
@@ -56,46 +58,54 @@ void execute(Interpreter *intprt, Instruction *inst)
 }
 
 // Instructions
-void add(Interpreter *intprt, int dest, int arg1, int arg2) {
+void add(Interpreter *intprt, int dest, int arg1, int arg2)
+{
     intprt->data[dest] = intprt->data[arg1] + intprt->data[arg2];
 }
 
-void addi(Interpreter *intprt, int dest, int arg1, int arg2) {
+void addi(Interpreter *intprt, int dest, int arg1, int arg2)
+{
     intprt->data[dest] = intprt->data[arg1] + arg2;
 }
 
-void sub(Interpreter *intprt, int dest, int arg1, int arg2) {
+void sub(Interpreter *intprt, int dest, int arg1, int arg2)
+{
     intprt->data[dest] = intprt->data[arg1] - intprt->data[arg2];
 }
 
-void subi(Interpreter *intprt, int dest, int arg1, int arg2) {
+void subi(Interpreter *intprt, int dest, int arg1, int arg2)
+{
     intprt->data[dest] = intprt->data[arg1] - arg2;
 }
 
-void movi(Interpreter *intprt, int dest, int arg1) {
+void movi(Interpreter *intprt, int dest, int arg1)
+{
     intprt->data[dest] = arg1;
 }
 
-void beq(Interpreter *intprt, int dest, int arg1, int arg2) {
+void beq(Interpreter *intprt, int dest, int arg1, int arg2)
+{
     if (arg1 == arg2)
         intprt->counter = dest;
     else if (intprt->data[arg1] == intprt->data[arg2])
         intprt-> counter = dest;
 }
 
-void beqi(Interpreter *intprt, int dest, int arg1, int arg2) {
+void beqi(Interpreter *intprt, int dest, int arg1, int arg2)
+{
     if (intprt->data[arg1] == arg2)
         intprt->counter = dest;
 }
 
-void bne(Interpreter *intprt, int dest, int arg1, int arg2) {
+void bne(Interpreter *intprt, int dest, int arg1, int arg2)
+{
     if (arg1 != arg2
         && intprt->data[arg1] != intprt->data[arg2])
         intprt-> counter = dest;
 }
 
-void bnei(Interpreter *intprt, int dest, int arg1, int arg2) {
-    if (intprt->data[arg1] != arg2) {
+void bnei(Interpreter *intprt, int dest, int arg1, int arg2)
+{
+    if (intprt->data[arg1] != arg2)
         intprt->counter = dest;
-    }
 }

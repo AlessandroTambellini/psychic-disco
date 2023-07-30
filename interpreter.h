@@ -6,13 +6,11 @@
 
 #define DATA_SIZE 1000
 
-typedef struct Interpreter Interpreter;
-
-struct Interpreter {
+typedef struct {
     Program program;
     int counter;
     int data[DATA_SIZE];
-};
+} Interpreter;
 
 // Memory
 void memory_print(Interpreter *);

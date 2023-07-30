@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include "program.h"
 
-int program_init(Program *program) {
+int program_init(Program *program)
+{
     program->v= (Instruction *) malloc(sizeof(Instruction));
     if (program->v == NULL)
         return 0;
@@ -13,7 +14,8 @@ int program_init(Program *program) {
     return 1;
 }
 
-int program_deinit(Program *program) {
+int program_deinit(Program *program)
+{
     if (program == NULL)
         return 0;
 
@@ -29,11 +31,13 @@ int program_deinit(Program *program) {
     return 1;
 }
 
-size_t program_size(Program *program) {
+size_t program_size(Program *program)
+{
     return program->size;
 }
 
-int program_inc_capacity(Program *program) {
+int program_inc_capacity(Program *program)
+{
     size_t capacity_new = 2 * program->capacity;
 
     Instruction *v_new = realloc(program->v, capacity_new * sizeof(Instruction));
@@ -50,7 +54,8 @@ int program_inc_capacity(Program *program) {
 
 // Pointer to program cause we may need to
 // re-allocate the Instruction vector;
-int program_add(Program *program, Instruction inst) {
+int program_add(Program *program, Instruction inst)
+{
     if (program->size == program->capacity) {
         if (!program_inc_capacity(program)) {
             printf("Failed to increase capacity.\n");
@@ -64,7 +69,8 @@ int program_add(Program *program, Instruction inst) {
     return 1;
 }
 
-void program_print(Program *program) {
+void program_print(Program *program)
+{
     Instruction *v = program->v;
 
     for (size_t i = 0; i < program_size(program); i++) {
@@ -72,11 +78,13 @@ void program_print(Program *program) {
     }
 }
 
-void inst_print(Instruction inst, size_t index) {
+void inst_print(Instruction inst, size_t index)
+{
     printf("[%zu]: %i %i %i %i\n", index, inst.code,
         inst.dest, inst.arg1, inst.arg2);
 }
 
-Instruction *program_fetch(Program *program, size_t index) {
+Instruction *program_fetch(Program *program, size_t index)
+{
     return &program->v[index];
 }
