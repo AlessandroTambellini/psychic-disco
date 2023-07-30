@@ -1,23 +1,22 @@
 #ifndef ACTIONS_H
 #define ACTIONS_H
 
-// typedef enum op {
-//     ADD,
-//     ADDI,
-//     SUB,
-//     SUBI,
-//     MOV,
-//     MOVI,
-//     B,
-//     BEQ,
-//     BEQI,
-//     BNE,
-//     BNEI
-// };
+enum op {
+    ADD,
+    ADDI,
+    SUB,
+    SUBI,
+    MOV,
+    MOVI,
+    B,
+    BEQ,
+    BEQI,
+    BNE,
+    BNEI
+};
 
 typedef struct {
-    // op code;
-    unsigned int code;
+    enum op code;
     unsigned int dest;
     unsigned int arg1;
     unsigned int arg2;
