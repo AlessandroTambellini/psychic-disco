@@ -1,6 +1,8 @@
 #ifndef ACTIONS_H
 #define ACTIONS_H
 
+#include <stdbool.h>
+
 enum op {
     ADD,
     ADDI,
@@ -18,21 +20,21 @@ enum op {
 typedef struct {
     enum op code;
     unsigned int dest;
-    unsigned int arg1;
-    unsigned int arg2;
+    int arg1;
+    int arg2;
 } Instruction;
 
 typedef struct {
     Instruction *v;
     size_t capacity; // maximum size before re-init
-    size_t size; // current Actions size
+    size_t size; // current size
 } Program;
 
-int program_init(Program *);
-int program_deinit(Program *);
+bool program_init(Program *);
+bool program_deinit(Program *);
 size_t program_size(Program *);
-int program_inc_capacity(Program *);
-int program_add(Program *, Instruction);
+bool program_inc_capacity(Program *);
+bool program_add(Program *, Instruction);
 Instruction *program_fetch(Program *, size_t); // program, index
 void program_print(Program *);
 void inst_print(Instruction, size_t); // inst, index

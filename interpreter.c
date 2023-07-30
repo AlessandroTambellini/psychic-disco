@@ -29,7 +29,8 @@ void loop(Interpreter *intprt)
     }
 }
 
-Instruction *fetch(Interpreter *intprt) {
+Instruction *fetch(Interpreter *intprt)
+{
     size_t counter = intprt->counter;
     return program_fetch(&intprt->program, counter);
 }
@@ -41,14 +42,15 @@ void execute(Interpreter *intprt, Instruction *inst)
     int dest = inst->dest;
     int arg1 = inst->arg1;
     int arg2 = inst->arg2;
+
     switch (inst->code) {
         case ADD:   add(intprt, dest, arg1, arg2); break;
         case ADDI:  addi(intprt, dest, arg1, arg2); break;
         case SUB:   sub(intprt, dest, arg1, arg2); break;
         case SUBI:  subi(intprt, dest, arg1, arg2); break;
-        case MOV:   addi(intprt, dest, arg1, 0); break; // mov implementation
+        case MOV:   addi(intprt, dest, arg1, 0); break;
         case MOVI:  movi(intprt, dest, arg1); break;
-        case B:     beq(intprt, dest, 0, 0); break; // b implementation
+        case B:     beq(intprt, dest, 0, 0); break;
         case BEQ:   beq(intprt, dest, arg1, arg2); break;
         case BEQI:  beqi(intprt, dest, arg1, arg2); break;
         case BNE:   bne(intprt, dest, arg1, arg2); break;
