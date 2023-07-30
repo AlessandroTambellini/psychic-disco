@@ -3,6 +3,12 @@
 #include "interpreter.h"
 #include "program.h"
 
+#define CHECK_DATA_BOUNDS_2(arg1, arg2) \
+    arg1 < DATA_SIZE && arg2 < DATA_SIZE
+
+#define CHECK_DATA_BOUNDS_3(arg1, arg2, arg3) \
+    arg1 < DATA_SIZE && arg2 < DATA_SIZE && arg3 < DATA_SIZE
+
 // Memory
 void memory_print(Interpreter *intprt)
 {
@@ -62,52 +68,66 @@ void execute(Interpreter *intprt, Instruction *inst)
 // Instructions
 void add(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] + intprt->data[arg2];
+    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2))
+        intprt->data[dest] = intprt->data[arg1] + intprt->data[arg2];
 }
 
 void addi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] + arg2;
+    if (CHECK_DATA_BOUNDS_2(dest, arg1))
+        intprt->data[dest] = intprt->data[arg1] + arg2;
 }
 
 void sub(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] - intprt->data[arg2];
+    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2))
+        intprt->data[dest] = intprt->data[arg1] - intprt->data[arg2];
 }
 
 void subi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    intprt->data[dest] = intprt->data[arg1] - arg2;
+    if (CHECK_DATA_BOUNDS_2(dest, arg1))
+        intprt->data[dest] = intprt->data[arg1] - arg2;
 }
 
 void movi(Interpreter *intprt, int dest, int arg1)
 {
-    intprt->data[dest] = arg1;
+    if (CHECK_DATA_BOUNDS_2(dest, arg1))
+        intprt->data[dest] = arg1;
 }
 
 void beq(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (arg1 == arg2)
-        intprt->counter = dest;
-    else if (intprt->data[arg1] == intprt->data[arg2])
-        intprt-> counter = dest;
+    if (dest < program_size(&intprt->program)
+            && CHECK_DATA_BOUNDS_2(arg1, arg2)) {
+        if (arg1 == arg2)
+            intprt->counter = dest;
+        else if (intprt->data[arg1] == intprt->data[arg2])
+            intprt-> counter = dest;
+    }
 }
 
 void beqi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (intprt->data[arg1] == arg2)
-        intprt->counter = dest;
+    if (arg1 < DATA_SIZE && dest < program_size(&intprt->program)) {
+        if (intprt->data[arg1] == arg2)
+            intprt->counter = dest;
+    }
 }
 
 void bne(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (arg1 != arg2
-        && intprt->data[arg1] != intprt->data[arg2])
-        intprt-> counter = dest;
+    if (dest < program_size(&intprt->program)
+            && CHECK_DATA_BOUNDS_2(arg1, arg2)) {
+        if (intprt->data[arg1] != intprt->data[arg2])
+            intprt-> counter = dest;
+    }
 }
 
 void bnei(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (intprt->data[arg1] != arg2)
-        intprt->counter = dest;
+    if (arg1 < DATA_SIZE && dest < program_size(&intprt->program)) {
+        if (intprt->data[arg1] != arg2)
+            intprt->counter = dest;
+    }
 }
