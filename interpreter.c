@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include "interpreter.h"
 #include "program.h"
 
@@ -49,20 +48,23 @@ InstResult execute(Interpreter *intprt, Instruction *inst)
     int arg1 = inst->arg1;
     int arg2 = inst->arg2;
 
+    InstResult res;
     switch (inst->code) {
-        case ADD:   return add(intprt, dest, arg1, arg2); break;
-        case ADDI:  return addi(intprt, dest, arg1, arg2); break;
-        case SUB:   return sub(intprt, dest, arg1, arg2); break;
-        case SUBI:  return subi(intprt, dest, arg1, arg2); break;
-        case MOV:   return addi(intprt, dest, arg1, 0); break;
-        case MOVI:  return movi(intprt, dest, arg1); break;
-        case B:     return beq(intprt, dest, 0, 0); break;
-        case BEQ:   return beq(intprt, dest, arg1, arg2); break;
-        case BEQI:  return beqi(intprt, dest, arg1, arg2); break;
-        case BNE:   return bne(intprt, dest, arg1, arg2); break;
-        case BNEI:  return bnei(intprt, dest, arg1, arg2); break;
-        default: printf("Instruction does not exist.\n"); break;
+        case ADD:   res = add(intprt, dest, arg1, arg2); break;
+        case ADDI:  res = addi(intprt, dest, arg1, arg2); break;
+        case SUB:   res = sub(intprt, dest, arg1, arg2); break;
+        case SUBI:  res = subi(intprt, dest, arg1, arg2); break;
+        case MOV:   res = addi(intprt, dest, arg1, 0); break;
+        case MOVI:  res = movi(intprt, dest, arg1); break;
+        case B:     res = beq(intprt, dest, 0, 0); break;
+        case BEQ:   res = beq(intprt, dest, arg1, arg2); break;
+        case BEQI:  res = beqi(intprt, dest, arg1, arg2); break;
+        case BNE:   res = bne(intprt, dest, arg1, arg2); break;
+        case BNEI:  res = bnei(intprt, dest, arg1, arg2); break;
+        default:    res = MALFORMED_INSTRUCTION; break;
     }
+
+    return res;
 }
 
 #define CHECK_DATA_BOUNDS_2(arg1, arg2) \

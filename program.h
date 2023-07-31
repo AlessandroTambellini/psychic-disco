@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-enum op {
+typedef enum {
     ADD,
     ADDI,
     SUB,
@@ -15,10 +15,10 @@ enum op {
     BEQI,
     BNE,
     BNEI
-};
+} op;
 
 typedef struct {
-    enum op code;
+    op code;
     unsigned int dest;
     int arg1;
     int arg2;
@@ -30,13 +30,13 @@ typedef struct {
     size_t size; // current size
 } Program;
 
-bool program_init(Program *);
-bool program_deinit(Program *);
-size_t program_size(Program *);
-bool program_inc_capacity(Program *);
-bool program_add(Program *, Instruction);
-Instruction *program_fetch(Program *, size_t); // program, index
-void program_print(Program *);
-void inst_print(Instruction, size_t); // inst, index
+bool program_init(Program *program);
+bool program_deinit(Program *program);
+size_t program_size(Program *program);
+bool program_inc_capacity(Program *program);
+bool program_add(Program *program, Instruction inst);
+void program_print(Program *program); // program, index
+void inst_print(Instruction inst, size_t index);
+Instruction *program_fetch(Program *program, size_t index); // inst, index
 
 #endif

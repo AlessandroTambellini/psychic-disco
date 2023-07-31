@@ -8,7 +8,8 @@
 
 typedef enum {
     OK,
-    OVERFLOW
+    OVERFLOW,
+    MALFORMED_INSTRUCTION,
 } InstResult;
 
 typedef struct {
@@ -21,12 +22,12 @@ typedef struct {
 void intprt_init(Interpreter *intprt, Program *program);
 
 // Memory
-void memory_print(Interpreter *);
+void memory_print(Interpreter *intprt);
 
 // Fetch-execute loop
-void loop(Interpreter *);
-Instruction *fetch(Interpreter *);
-InstResult execute(Interpreter *, Instruction *);
+void loop(Interpreter *intprt);
+Instruction *fetch(Interpreter *intprt);
+InstResult execute(Interpreter *intprt, Instruction *inst);
 
 // Instruction body
 InstResult add(Interpreter *intprt, int dest, int arg1, int arg2);
