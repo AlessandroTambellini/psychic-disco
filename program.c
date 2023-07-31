@@ -41,7 +41,7 @@ bool program_inc_capacity(Program *program)
 
     Instruction *v_new = realloc(program->v, capacity_new * sizeof(Instruction));
     if (v_new == NULL) {
-        printf("Memory reallocation failed!\n");
+        printf("Memory reallocation failed.\n");
         return false;
     }
 

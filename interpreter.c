@@ -3,12 +3,6 @@
 #include "interpreter.h"
 #include "program.h"
 
-#define CHECK_DATA_BOUNDS_2(arg1, arg2) \
-    arg1 < DATA_SIZE && arg2 < DATA_SIZE
-
-#define CHECK_DATA_BOUNDS_3(arg1, arg2, arg3) \
-    arg1 < DATA_SIZE && arg2 < DATA_SIZE && arg3 < DATA_SIZE
-
 // Interpreter
 void intprt_init(Interpreter *intprt, Program *program) {
     intprt->program = *program;
@@ -49,60 +43,89 @@ Instruction *fetch(Interpreter *intprt)
 
 // Pointer to interpreter cause we need
 // to increase the program counter
-void execute(Interpreter *intprt, Instruction *inst)
+InstResult execute(Interpreter *intprt, Instruction *inst)
 {
     int dest = inst->dest;
     int arg1 = inst->arg1;
     int arg2 = inst->arg2;
 
     switch (inst->code) {
-        case ADD:   add(intprt, dest, arg1, arg2); break;
-        case ADDI:  addi(intprt, dest, arg1, arg2); break;
-        case SUB:   sub(intprt, dest, arg1, arg2); break;
-        case SUBI:  subi(intprt, dest, arg1, arg2); break;
-        case MOV:   addi(intprt, dest, arg1, 0); break;
-        case MOVI:  movi(intprt, dest, arg1); break;
-        case B:     beq(intprt, dest, 0, 0); break;
-        case BEQ:   beq(intprt, dest, arg1, arg2); break;
-        case BEQI:  beqi(intprt, dest, arg1, arg2); break;
-        case BNE:   bne(intprt, dest, arg1, arg2); break;
-        case BNEI:  bnei(intprt, dest, arg1, arg2); break;
-        default: printf("default\n"); break;
+        case ADD:   return add(intprt, dest, arg1, arg2); break;
+        case ADDI:  return addi(intprt, dest, arg1, arg2); break;
+        case SUB:   return sub(intprt, dest, arg1, arg2); break;
+        case SUBI:  return subi(intprt, dest, arg1, arg2); break;
+        case MOV:   return addi(intprt, dest, arg1, 0); break;
+        case MOVI:  return movi(intprt, dest, arg1); break;
+        case B:     return beq(intprt, dest, 0, 0); break;
+        case BEQ:   return beq(intprt, dest, arg1, arg2); break;
+        case BEQI:  return beqi(intprt, dest, arg1, arg2); break;
+        case BNE:   return bne(intprt, dest, arg1, arg2); break;
+        case BNEI:  return bnei(intprt, dest, arg1, arg2); break;
+        default: printf("Instruction does not exist.\n"); break;
     }
 }
 
+#define CHECK_DATA_BOUNDS_2(arg1, arg2) \
+    arg1 >= 0 && arg1 < DATA_SIZE \
+    && arg2 >= 0 && arg2 < DATA_SIZE
+
+#define CHECK_DATA_BOUNDS_3(arg1, arg2, arg3) \
+    arg1 >= 0 && arg1 < DATA_SIZE \
+    && arg2 >= 0 && arg2 < DATA_SIZE \
+    && arg3 >= 0 && arg3 < DATA_SIZE
+
 // Instructions
-void add(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult add(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2))
+    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2)) {
         intprt->data[dest] = intprt->data[arg1] + intprt->data[arg2];
+        return OK;
+    }
+
+    return OVERFLOW;
 }
 
-void addi(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult addi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (CHECK_DATA_BOUNDS_2(dest, arg1))
+    if (CHECK_DATA_BOUNDS_2(dest, arg1)) {
         intprt->data[dest] = intprt->data[arg1] + arg2;
+        return OK;
+    }
+
+    return OVERFLOW;
 }
 
-void sub(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult sub(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2))
+    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2)) {
         intprt->data[dest] = intprt->data[arg1] - intprt->data[arg2];
+        return OK;
+    }
+
+    return OVERFLOW;
 }
 
-void subi(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult subi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
-    if (CHECK_DATA_BOUNDS_2(dest, arg1))
+    if (CHECK_DATA_BOUNDS_2(dest, arg1)) {
         intprt->data[dest] = intprt->data[arg1] - arg2;
+        return OK;
+    }
+
+    return OVERFLOW;
 }
 
-void movi(Interpreter *intprt, int dest, int arg1)
+InstResult movi(Interpreter *intprt, int dest, int arg1)
 {
-    if (CHECK_DATA_BOUNDS_2(dest, arg1))
+    if (CHECK_DATA_BOUNDS_2(dest, arg1)) {
         intprt->data[dest] = arg1;
+        return OK;
+    }
+
+    return OVERFLOW;
 }
 
-void beq(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult beq(Interpreter *intprt, int dest, int arg1, int arg2)
 {
     if (dest < program_size(&intprt->program)
             && CHECK_DATA_BOUNDS_2(arg1, arg2)) {
@@ -110,30 +133,49 @@ void beq(Interpreter *intprt, int dest, int arg1, int arg2)
             intprt->counter = dest;
         else if (intprt->data[arg1] == intprt->data[arg2])
             intprt-> counter = dest;
+
+        return OK;
     }
+
+    return OVERFLOW;
 }
 
-void beqi(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult beqi(Interpreter *intprt, int dest, int arg1, int arg2)
 {
     if (arg1 < DATA_SIZE && dest < program_size(&intprt->program)) {
         if (intprt->data[arg1] == arg2)
             intprt->counter = dest;
+
+        return OK;
     }
+
+    return OVERFLOW;
 }
 
-void bne(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult bne(Interpreter *intprt, int dest, int arg1, int arg2)
 {
     if (dest < program_size(&intprt->program)
             && CHECK_DATA_BOUNDS_2(arg1, arg2)) {
         if (intprt->data[arg1] != intprt->data[arg2])
             intprt-> counter = dest;
+
+        return OK;
     }
+
+    return OVERFLOW;
 }
 
-void bnei(Interpreter *intprt, int dest, int arg1, int arg2)
+InstResult bnei(Interpreter *intprt, int dest, int arg1, int arg2)
 {
     if (arg1 < DATA_SIZE && dest < program_size(&intprt->program)) {
         if (intprt->data[arg1] != arg2)
             intprt->counter = dest;
+
+        return OK;
     }
+
+    return OVERFLOW;
 }
+
+#undef CHECK_DATA_BOUNDS_2
+#undef CHECK_DATA_BOUNDS_3
