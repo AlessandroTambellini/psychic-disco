@@ -3,10 +3,12 @@
 
 #include "stddef.h"
 #include "program.h"
+#include "stack.h"
 
 #define DATA_SIZE 1000
 
 typedef struct {
+    Stack stack;
     Program program;
     int counter;
     int data[DATA_SIZE];

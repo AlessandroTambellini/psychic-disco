@@ -14,7 +14,7 @@ void memory_print(Interpreter *intprt)
 {
     int limit = 20;
     for (int i = 0; i < limit && i < DATA_SIZE; i++) {
-        printf("[%i]: %i\n", i, intprt->data[i]);
+        printf("[%i]:\t %i\n", i, intprt->data[i]);
     }
 }
 
