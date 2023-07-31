@@ -9,6 +9,12 @@
 #define CHECK_DATA_BOUNDS_3(arg1, arg2, arg3) \
     arg1 < DATA_SIZE && arg2 < DATA_SIZE && arg3 < DATA_SIZE
 
+// Interpreter
+void intprt_init(Interpreter *intprt, Program *program) {
+    intprt->program = *program;
+    intprt->counter = 0;
+}
+
 // Memory
 void memory_print(Interpreter *intprt)
 {
