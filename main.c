@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "program.h"
-#include "interpreter.h"
+#include "vm.h"
 
 int main()
 {
@@ -20,14 +20,14 @@ int main()
     program_add(&program, i4);
     program_add(&program, i5);
 
-    // Create interpreter
-    Interpreter intprt;
-    intprt_init(&intprt, &program);
+    // Create vm
+    Vm vm;
+    vm_init(&vm, &program);
 
     // Fetch-execute loop
-    loop(&intprt);
+    loop(&vm);
 
-    memory_print(&intprt);
+    memory_print(&vm);
 
     return 0;
 }

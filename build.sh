@@ -2,4 +2,4 @@
 
 set -xe 
 
-gcc main.c program.c interpreter.c -o psychic-disco
+gcc main.c program.c vm.c -o psychic-disco
