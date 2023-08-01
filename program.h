@@ -8,17 +8,24 @@ typedef enum {
     ADDI,
     SUB,
     SUBI,
+    MUL,
+    MULI,
+    DIV,
+    DIVI,
     MOV,
     MOVI,
     B,
     BEQ,
     BEQI,
     BNE,
-    BNEI
-} op;
+    BNEI,
+    BLEI,
+    BGEI,
+    HALT
+} OpCode;
 
 typedef struct {
-    op code;
+    OpCode code;
     unsigned int dest;
     int arg1;
     int arg2;

@@ -8,8 +8,9 @@
 
 typedef enum {
     OK,
-    OVERFLOW,
+    DATA_OVERFLOW,
     MALFORMED_INSTRUCTION,
+    DIVISION_BY_ZERO
 } InstResult;
 
 typedef struct {
@@ -34,10 +35,18 @@ InstResult add(Vm *vm, int dest, int arg1, int arg2);
 InstResult addi(Vm *vm, int dest, int arg1, int arg2);
 InstResult sub(Vm *vm, int dest, int arg1, int arg2);
 InstResult subi(Vm *vm, int dest, int arg1, int arg2);
+InstResult subi(Vm *vm, int dest, int arg1, int arg2);
+InstResult mul(Vm *vm, int dest, int arg1, int arg2);
+InstResult muli(Vm *vm, int dest, int arg1, int arg2);
+InstResult div(Vm *vm, int dest, int arg1, int arg2);
+InstResult divi(Vm *vm, int dest, int arg1, int arg2);
 InstResult movi(Vm *vm, int dest, int arg1);
 InstResult beq(Vm *vm, int dest, int arg1, int arg2);
 InstResult beqi(Vm *vm, int dest, int arg1, int arg2);
 InstResult bne(Vm *vm, int dest, int arg1, int arg2);
 InstResult bnei(Vm *vm, int dest, int arg1, int arg2);
+InstResult blei(Vm *vm, int dest, int arg1, int arg2);
+InstResult bgei(Vm *vm, int dest, int arg1, int arg2);
+InstResult halt(Vm *vm);
 
 #endif

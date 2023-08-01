@@ -2,11 +2,16 @@
 #include "program.h"
 #include "vm.h"
 
-static char *res_names[] = {
-    "OK",
-    "OVERFLOW",
-    "MALFORMED_INSTRUCTION"
+#define STRINGIFY(res) #res
+
+static const char *res_names[] = {
+    STRINGIFY(OK),
+    STRINGIFY(DATA_OVERFLOW),
+    STRINGIFY(MALFORMED_INSTRUCTION),
+    STRINGIFY(DIVISION_BY_ZER)
 };
+
+#undef STRINGIFY
 
 // Interpreter
 void vm_init(Vm *vm, Program *program) {
@@ -37,7 +42,12 @@ void loop(Vm *vm)
 
         // Execute instruction
         InstResult res = execute(vm, inst);
-        // printf("%s\n", res_names[res]);
+
+        // Handle result
+        if (res != OK) {
+            printf("Error: %s at instruction %d.\n", res_names[res], vm->pc);
+            return;
+        }
     }
 }
 
@@ -61,6 +71,10 @@ InstResult execute(Vm *vm, Instruction *inst)
         case ADDI:  res = addi(vm, dest, arg1, arg2); break;
         case SUB:   res = sub(vm, dest, arg1, arg2); break;
         case SUBI:  res = subi(vm, dest, arg1, arg2); break;
+        case MUL:   res = mul(vm, dest, arg1, arg2); break;
+        case MULI:  res = muli(vm, dest, arg1, arg2); break;
+        case DIV:   res = div(vm, dest, arg1, arg2); break;
+        case DIVI:  res = divi(vm, dest, arg1, arg2); break;
         case MOV:   res = addi(vm, dest, arg1, 0); break;
         case MOVI:  res = movi(vm, dest, arg1); break;
         case B:     res = beq(vm, dest, 0, 0); break;
@@ -68,11 +82,17 @@ InstResult execute(Vm *vm, Instruction *inst)
         case BEQI:  res = beqi(vm, dest, arg1, arg2); break;
         case BNE:   res = bne(vm, dest, arg1, arg2); break;
         case BNEI:  res = bnei(vm, dest, arg1, arg2); break;
+        case BLEI:  res = blei(vm, dest, arg1, arg2); break;
+        case BGEI:  res = bgei(vm, dest, arg1, arg2); break;
+        case HALT:  res = halt(vm); break;
         default:    res = MALFORMED_INSTRUCTION; break;
     }
 
     return res;
 }
+
+#define CHECK_DATA_BOUNDS(arg) \
+    arg >= 0 && arg < DATA_SIZE
 
 #define CHECK_DATA_BOUNDS_2(arg1, arg2) \
     arg1 >= 0 && arg1 < DATA_SIZE \
@@ -91,7 +111,7 @@ InstResult add(Vm *vm, int dest, int arg1, int arg2)
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
 }
 
 InstResult addi(Vm *vm, int dest, int arg1, int arg2)
@@ -101,7 +121,7 @@ InstResult addi(Vm *vm, int dest, int arg1, int arg2)
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
 }
 
 InstResult sub(Vm *vm, int dest, int arg1, int arg2)
@@ -111,7 +131,7 @@ InstResult sub(Vm *vm, int dest, int arg1, int arg2)
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
 }
 
 InstResult subi(Vm *vm, int dest, int arg1, int arg2)
@@ -121,7 +141,54 @@ InstResult subi(Vm *vm, int dest, int arg1, int arg2)
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
+}
+
+InstResult mul(Vm *vm, int dest, int arg1, int arg2) 
+{
+    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2)) {
+        vm->data[dest] = vm->data[arg1] * vm->data[arg2];
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult muli(Vm *vm, int dest, int arg1, int arg2) 
+{
+    if (CHECK_DATA_BOUNDS_2(dest, arg1)) {
+        vm->data[dest] = vm->data[arg1] * arg2;
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult div(Vm *vm, int dest, int arg1, int arg2) 
+{
+    if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2)) {
+        int den = vm->data[arg2];
+        if (den == 0)
+            return DIVISION_BY_ZERO;
+
+        vm->data[dest] = vm->data[arg1] / den;
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult divi(Vm *vm, int dest, int arg1, int arg2) 
+{
+    if (arg2 == 0)
+        return DIVISION_BY_ZERO;
+
+    if (CHECK_DATA_BOUNDS_2(dest, arg1)) {
+        vm->data[dest] = vm->data[arg1] / arg2;
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
 }
 
 InstResult movi(Vm *vm, int dest, int arg1)
@@ -131,13 +198,13 @@ InstResult movi(Vm *vm, int dest, int arg1)
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
 }
 
 InstResult beq(Vm *vm, int dest, int arg1, int arg2)
 {
-    if (dest < program_size(&vm->program)
-            && CHECK_DATA_BOUNDS_2(arg1, arg2)) {
+    if (CHECK_DATA_BOUNDS_2(arg1, arg2)
+            && dest < program_size(&vm->program)) {
         if (arg1 == arg2)
             vm->pc = dest;
         else if (vm->data[arg1] == vm->data[arg2])
@@ -146,44 +213,78 @@ InstResult beq(Vm *vm, int dest, int arg1, int arg2)
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
 }
 
 InstResult beqi(Vm *vm, int dest, int arg1, int arg2)
 {
-    if (arg1 < DATA_SIZE && dest < program_size(&vm->program)) {
+    if (CHECK_DATA_BOUNDS(arg1)
+            && dest < program_size(&vm->program)) {
         if (vm->data[arg1] == arg2)
             vm->pc = dest;
 
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
 }
 
 InstResult bne(Vm *vm, int dest, int arg1, int arg2)
 {
-    if (dest < program_size(&vm->program)
-            && CHECK_DATA_BOUNDS_2(arg1, arg2)) {
+    if (CHECK_DATA_BOUNDS_2(arg1, arg2)
+            && dest < program_size(&vm->program)) {
         if (vm->data[arg1] != vm->data[arg2])
             vm-> pc = dest;
 
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
 }
 
 InstResult bnei(Vm *vm, int dest, int arg1, int arg2)
 {
-    if (arg1 < DATA_SIZE && dest < program_size(&vm->program)) {
+    if (CHECK_DATA_BOUNDS(arg1)
+            && dest < program_size(&vm->program)) {
         if (vm->data[arg1] != arg2)
             vm->pc = dest;
 
         return OK;
     }
 
-    return OVERFLOW;
+    return DATA_OVERFLOW;
+}
+
+InstResult blei(Vm *vm, int dest, int arg1, int arg2)
+{
+    if (CHECK_DATA_BOUNDS(arg1)
+            && dest < program_size(&vm->program)) {
+        if (vm->data[arg1] <= arg2)
+            vm->pc = dest;
+
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult bgei(Vm *vm, int dest, int arg1, int arg2)
+{
+    if (CHECK_DATA_BOUNDS(arg1)
+            && dest < program_size(&vm->program)) {
+        if (vm->data[arg1] >= arg2)
+            vm->pc = dest;
+
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult halt(Vm *vm)
+{
+    vm->pc = program_size(&vm->program);
+    return OK;
 }
 
 #undef CHECK_DATA_BOUNDS_2
