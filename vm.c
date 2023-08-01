@@ -2,6 +2,12 @@
 #include "program.h"
 #include "vm.h"
 
+static char *res_names[] = {
+    "OK",
+    "OVERFLOW",
+    "MALFORMED_INSTRUCTION"
+};
+
 // Interpreter
 void vm_init(Vm *vm, Program *program) {
     vm->program = *program;
@@ -11,7 +17,7 @@ void vm_init(Vm *vm, Program *program) {
 // Memory
 void memory_print(Vm *vm)
 {
-    int limit = 20;
+    int limit = 16;
     for (int i = 0; i < limit && i < DATA_SIZE; i++) {
         printf("[%i]:\t %i\n", i, vm->data[i]);
     }
@@ -26,11 +32,12 @@ void loop(Vm *vm)
         // Fetch instruction
         inst = fetch(vm);
 
-        // Increment program pc
+        // Increment program counter
         vm->pc++;
 
         // Execute instruction
-        execute(vm, inst);
+        InstResult res = execute(vm, inst);
+        // printf("%s\n", res_names[res]);
     }
 }
 
@@ -41,7 +48,7 @@ Instruction *fetch(Vm *vm)
 }
 
 // Pointer to interpreter cause we need
-// to increase the program pc
+// to increase the program counter
 InstResult execute(Vm *vm, Instruction *inst)
 {
     int dest = inst->dest;
