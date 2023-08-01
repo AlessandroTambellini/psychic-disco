@@ -8,12 +8,12 @@ int main()
     Program program;
     program_init(&program);
 
-    Instruction i1 = { MOVI, 0, 5};
-    Instruction i2 = { MOV, 1, 0 };
-    Instruction i3 = { ADDI, 1, 1, -1};
-    Instruction i4 = { BEQI, 6, 1, 1};
-    Instruction i5 = { MUL,  0, 0, 1};
-    Instruction i6 = { B, 2 };
+    Instruction i1 = { MOVI,    0, 5};
+    Instruction i2 = { MOV,     1, 0 };
+    Instruction i3 = { ADDI,    1, 1, -1};
+    Instruction i4 = { BEQI,    6, 1, 1};
+    Instruction i5 = { MUL,     0, 0, 1};
+    Instruction i6 = { B,       2 };
     Instruction i7 = { HALT };
 
     program_add(&program, i1);

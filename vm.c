@@ -2,17 +2,6 @@
 #include "program.h"
 #include "vm.h"
 
-#define STRINGIFY(res) #res
-
-static const char *res_names[] = {
-    STRINGIFY(OK),
-    STRINGIFY(DATA_OVERFLOW),
-    STRINGIFY(MALFORMED_INSTRUCTION),
-    STRINGIFY(DIVISION_BY_ZER)
-};
-
-#undef STRINGIFY
-
 // Interpreter
 void vm_init(Vm *vm, Program *program) {
     vm->program = *program;
@@ -32,7 +21,6 @@ void memory_print(Vm *vm)
 void loop(Vm *vm)
 {
     Instruction *inst;
-
     while (vm->pc < vm->program.size) {
         // Fetch instruction
         inst = fetch(vm);
@@ -46,7 +34,7 @@ void loop(Vm *vm)
         // Handle result
         if (res != OK) {
             printf("Error: %s at instruction %d.\n", res_names[res], vm->pc);
-            return;
+            break;
         }
     }
 }
