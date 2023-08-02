@@ -1,10 +1,10 @@
 # psychic-disco
 
-## Usage 
+### Usage 
 Execute **_build.sh_** by running:  
 `./build.sh`
 
-## Instruction set description
+### Instruction set description
 - `ADD A B C`: data[A] = data[B] + data[C]
 - `ADDI A B C`: data[A] = data[B] + C
 - `SUB A B C`: data[A] = data[B] - data[C]
