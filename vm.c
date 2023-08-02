@@ -293,5 +293,6 @@ InstResult halt(Vm *vm)
     return OK;
 }
 
+#undef CHECK_DATA_BOUNDS
 #undef CHECK_DATA_BOUNDS_2
 #undef CHECK_DATA_BOUNDS_3

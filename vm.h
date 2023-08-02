@@ -13,14 +13,14 @@ typedef enum {
     DIVISION_BY_ZERO
 } InstResult;
 
-#define STRINGIFY(res) #res
+#define RES_STRING(res) #res
 static const char *res_names[] = {
-    STRINGIFY(OK),
-    STRINGIFY(DATA_OVERFLOW),
-    STRINGIFY(MALFORMED_INSTRUCTION),
-    STRINGIFY(DIVISION_BY_ZER)
+    RES_STRING(OK),
+    RES_STRING(DATA_OVERFLOW),
+    RES_STRING(MALFORMED_INSTRUCTION),
+    RES_STRING(DIVISION_BY_ZER)
 };
-#undef STRINGIFY
+#undef RES_STRING
 
 typedef struct {
     Program program;
