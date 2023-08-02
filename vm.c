@@ -13,7 +13,7 @@ void memory_print(Vm *vm)
 {
     int limit = 16;
     for (int i = 0; i < limit && i < DATA_SIZE; i++) {
-        printf("[%i]:\t %i\n", i, vm->data[i]);
+        printf("[%i]:\t%i\n", i, vm->data[i]);
     }
 }
 
@@ -72,6 +72,8 @@ InstResult execute(Vm *vm, Instruction *inst)
         case BNEI:  res = bnei(vm, dest, arg1, arg2); break;
         case BLEI:  res = blei(vm, dest, arg1, arg2); break;
         case BGEI:  res = bgei(vm, dest, arg1, arg2); break;
+        case RET:   res = ret(vm, dest); break;
+        case RETI:  res = reti(vm, dest); break;
         case HALT:  res = halt(vm); break;
         default:    res = MALFORMED_INSTRUCTION; break;
     }
@@ -267,6 +269,22 @@ InstResult bgei(Vm *vm, int dest, int arg1, int arg2)
     }
 
     return DATA_OVERFLOW;
+}
+
+InstResult ret(Vm *vm, int dest)
+{
+    if (CHECK_DATA_BOUNDS(dest)) {
+        vm->data[0] = vm->data[dest];
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult reti(Vm *vm, int dest)
+{
+    vm->data[0] = dest;
+    return OK;
 }
 
 InstResult halt(Vm *vm)

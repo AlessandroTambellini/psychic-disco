@@ -21,6 +21,8 @@ typedef enum {
     BNEI,
     BLEI,
     BGEI,
+    RET,
+    RETI,
     HALT
 } OpCode;
 

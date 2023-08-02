@@ -56,6 +56,8 @@ InstResult bne(Vm *vm, int dest, int arg1, int arg2);
 InstResult bnei(Vm *vm, int dest, int arg1, int arg2);
 InstResult blei(Vm *vm, int dest, int arg1, int arg2);
 InstResult bgei(Vm *vm, int dest, int arg1, int arg2);
+InstResult ret(Vm *vm, int dest);
+InstResult reti(Vm *vm, int dest);
 InstResult halt(Vm *vm);
 
 #endif
