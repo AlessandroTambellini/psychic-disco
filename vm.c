@@ -11,8 +11,13 @@ void vm_init(Vm *vm, Program *program) {
 // Memory
 void memory_print(Vm *vm)
 {
-    int limit = 16;
-    for (int i = 0; i < limit && i < DATA_SIZE; i++) {
+    int prog_end = vm->program.size;
+    /* 
+    il check "&& i < DATA_SIZE" non serve, perché
+    per ogni instruzione inserita viene fatto questo
+    check
+    */
+    for (int i = 0; i < prog_end; i++) {
         printf("[%i]:\t%i\n", i, vm->data[i]);
     }
 }

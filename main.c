@@ -16,6 +16,24 @@ int main()
     Instruction i6 = { B,       2 };
     Instruction i7 = { HALT };
 
+    // the program counter counts from 0
+
+    /* 
+    r0: 5
+    r1: 5
+    r1: 4
+    r0: 5 * 4 = 20
+
+    r1: 3
+    r0: 20 * 3 = 60
+
+    r1: 2
+    r0: 60 * 2 = 120
+
+    pc = program->size
+    exit the program
+    */
+
     program_add(&program, i1);
     program_add(&program, i2);
     program_add(&program, i3);
