@@ -32,5 +32,7 @@ int main()
 
     memory_print(&vm);
 
+    program_deinit(&program);
+
     return 0;
 }
