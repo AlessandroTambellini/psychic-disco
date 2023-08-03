@@ -1,49 +1,36 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "program.h"
-#include "interpreter.h"
+#include "vm.h"
 
 int main()
 {
-    // Creating program
+    // Create program (factorial of 5)
     Program program;
     program_init(&program);
 
-    Instruction i1 = {5, 0, 0, 0};
-    Instruction i2 = {8, 1000000000, 0, 420};
-    Instruction i3 = {1, 0, 0, 1};
-    Instruction i4 = {10, 1, 0, 420};
+    Instruction i1 = { MOVI,    0, 5 };
+    Instruction i2 = { MOV,     1, 0 };
+    Instruction i3 = { ADDI,    1, 1, -1};
+    Instruction i4 = { BEQI,    6, 1, 1};
+    Instruction i5 = { MUL,     0, 0, 1};
+    Instruction i6 = { B,       2 };
+    Instruction i7 = { HALT };
 
     program_add(&program, i1);
     program_add(&program, i2);
     program_add(&program, i3);
     program_add(&program, i4);
+    program_add(&program, i5);
+    program_add(&program, i6);
+    program_add(&program, i7);
 
-    // Creating interpreter
-    Interpreter intprt;
-    unsigned long long intprt_mem;
-    intprt_init(&intprt, program, &intprt_mem);
-    printf("intprt_mem: %llu\n", intprt_mem);
-
-    // check dest address < intprt max address
-    for (int i = 0; i < program.size; i++)
-    {
-        Instruction *inst = program_fetch(&intprt.program, i);
-        if (inst->dest >= intprt_mem)
-        {
-            printf("Error in instruction {%d, %d, %d, %d}. The destination address "
-                   "exceeds the address limit.",
-                   inst->code, inst->dest, inst->arg1, inst->arg2);
-            exit(1);
-            // TODO: ask the user to insert the istructions again instead of exiting the program
-        }
-    }
+    // Create vm
+    Vm vm;
+    vm_init(&vm, &program);
 
     // Fetch-execute loop
-    loop(&intprt);
+    loop(&vm);
 
-    memory_print(&intprt);
+    memory_print(&vm);
 
     return 0;
 }

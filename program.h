@@ -1,32 +1,52 @@
 #ifndef ACTIONS_H
 #define ACTIONS_H
 
-typedef struct Instruction Instruction;
+#include <stdio.h>
+#include <stdbool.h>
 
-struct Instruction
-{
-    unsigned int code; // always positive. code -> instruction
-    int dest;          // it is always a memory address (fake)
+typedef enum {
+    ADD,
+    ADDI,
+    SUB,
+    SUBI,
+    MUL,
+    MULI,
+    DIV,
+    DIVI,
+    MOV,
+    MOVI,
+    B,
+    BEQ,
+    BEQI,
+    BNE,
+    BNEI,
+    BLEI,
+    BGEI,
+    RET,
+    RETI,
+    HALT
+} OpCode;
+
+typedef struct {
+    OpCode code;
+    unsigned int dest;
     int arg1;
     int arg2;
-};
+} Instruction;
 
-typedef struct Program Program;
-
-struct Program
-{
+typedef struct {
     Instruction *v;
     size_t capacity; // maximum size before re-init
-    size_t size;     // current Actions size
-};
+    size_t size; // current size
+} Program;
 
-int program_init(Program *);
-int program_deinit(Program *);
-size_t program_size(Program *);
-int program_inc_capacity(Program *);
-int program_add(Program *, Instruction);
-Instruction *program_fetch(Program *, size_t); // program, index
-void program_print(Program *);
-void inst_print(Instruction, size_t); // inst, index
+bool program_init(Program *program);
+bool program_deinit(Program *program);
+size_t program_size(Program *program);
+bool program_inc_capacity(Program *program);
+bool program_add(Program *program, Instruction inst);
+void program_print(Program *program);
+void inst_print(Instruction inst, size_t index);
+Instruction *program_fetch(Program *program, size_t index);
 
 #endif

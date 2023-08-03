@@ -2,35 +2,32 @@
 #include <stdio.h>
 #include "program.h"
 
-int program_init(Program *program)
+bool program_init(Program *program)
 {
     program->v = (Instruction *)malloc(sizeof(Instruction));
     if (program->v == NULL)
-        return 0;
+        return false;
 
     program->capacity = 1;
     program->size = 0;
 
-    return 1;
+    return true;
 }
 
-int program_deinit(Program *program)
+bool program_deinit(Program *program)
 {
     if (program == NULL)
-        return 0;
+        return false;
 
-    if (program->v == NULL)
-    {
-        return 0;
-    }
-    else
-    {
+    if (program->v == NULL) {
+        return false;
+    } else {
         free(program->v);
     }
 
     free(program);
 
-    return 1;
+    return true;
 }
 
 size_t program_size(Program *program)
@@ -38,40 +35,37 @@ size_t program_size(Program *program)
     return program->size;
 }
 
-int program_inc_capacity(Program *program)
+bool program_inc_capacity(Program *program)
 {
     size_t capacity_new = 2 * program->capacity;
 
-    Instruction *v_new = (Instruction *)realloc(program->v, capacity_new * sizeof(Instruction));
-    if (v_new == NULL)
-    {
-        printf("Memory reallocation failed!\n");
-        return 0;
+    Instruction *v_new = realloc(program->v, capacity_new * sizeof(Instruction));
+    if (v_new == NULL) {
+        printf("Memory reallocation failed.\n");
+        return false;
     }
 
     program->v = v_new;
     program->capacity = capacity_new;
 
-    return 1;
+    return true;
 }
 
 // Pointer to program cause we may need to
 // re-allocate the Instruction vector;
-int program_add(Program *program, Instruction inst)
+bool program_add(Program *program, Instruction inst)
 {
-    if (program->size == program->capacity)
-    {
-        if (!program_inc_capacity(program))
-        {
+    if (program->size == program->capacity) {
+        if (!program_inc_capacity(program)) {
             printf("Failed to increase capacity.\n");
-            return 0;
+            return false;
         }
     }
 
     program->v[program->size] = inst;
     program->size++;
 
-    return 1;
+    return true;
 }
 
 void program_print(Program *program)
@@ -86,8 +80,8 @@ void program_print(Program *program)
 
 void inst_print(Instruction inst, size_t index)
 {
-    printf("[%zu]: %i %i %i %i\n", index, inst.code,
-           inst.dest, inst.arg1, inst.arg2);
+    printf("[%zu]:\t%i %i %i %i\n", index, inst.code,
+        inst.dest, inst.arg1, inst.arg2);
 }
 
 Instruction *program_fetch(Program *program, size_t index)
