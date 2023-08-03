@@ -3,7 +3,8 @@
 #include "vm.h"
 
 // Interpreter
-void vm_init(Vm *vm, Program *program) {
+void vm_init(Vm *vm, Program *program)
+{
     vm->program = *program;
     vm->pc = 0;
 }

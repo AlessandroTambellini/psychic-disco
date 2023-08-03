@@ -1,6 +1,7 @@
 #ifndef ACTIONS_H
 #define ACTIONS_H
 
+#include <stdio.h>
 #include <stdbool.h>
 
 typedef enum {
@@ -44,8 +45,8 @@ bool program_deinit(Program *program);
 size_t program_size(Program *program);
 bool program_inc_capacity(Program *program);
 bool program_add(Program *program, Instruction inst);
-void program_print(Program *program); // program, index
+void program_print(Program *program);
 void inst_print(Instruction inst, size_t index);
-Instruction *program_fetch(Program *program, size_t index); // inst, index
+Instruction *program_fetch(Program *program, size_t index);
 
 #endif

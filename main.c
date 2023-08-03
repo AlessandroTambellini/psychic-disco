@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "program.h"
 #include "vm.h"
 

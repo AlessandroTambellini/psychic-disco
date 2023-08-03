@@ -4,7 +4,7 @@
 
 bool program_init(Program *program)
 {
-    program->v = (Instruction *) malloc(sizeof(Instruction));
+    program->v = (Instruction *)malloc(sizeof(Instruction));
     if (program->v == NULL)
         return false;
 
@@ -72,7 +72,8 @@ void program_print(Program *program)
 {
     Instruction *v = program->v;
 
-    for (size_t i = 0; i < program_size(program); i++) {
+    for (size_t i = 0; i < program_size(program); i++)
+    {
         inst_print(v[i], i);
     }
 }
