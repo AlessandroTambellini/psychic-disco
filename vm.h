@@ -4,7 +4,6 @@
 #include "stddef.h"
 #include "program.h"
 
-// modify DATA_SIZE to be a const int
 #define DATA_SIZE 1000
 
 typedef enum {
