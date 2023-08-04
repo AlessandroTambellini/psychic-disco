@@ -1,5 +1,5 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef PROGRAM_H
+#define PROGRAM_H
 
 #include <stdio.h>
 #include <stdbool.h>

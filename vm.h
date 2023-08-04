@@ -1,5 +1,5 @@
-#ifndef INTERPRETER_H
-#define INTERPRETER_H
+#ifndef VM_H
+#define VM_H
 
 #include "stddef.h"
 #include "program.h"

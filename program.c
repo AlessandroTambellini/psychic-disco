@@ -25,8 +25,6 @@ bool program_deinit(Program *program)
         free(program->v);
     }
 
-    // free(program);
-
     return true;
 }
 

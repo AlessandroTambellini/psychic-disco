@@ -29,9 +29,9 @@ int main()
 
     // Fetch-execute loop
     loop(&vm);
-
     memory_print(&vm);
 
+    // Unload program
     program_deinit(&program);
 
     return 0;
