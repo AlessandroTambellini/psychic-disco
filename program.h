@@ -29,7 +29,7 @@ typedef enum {
 
 typedef struct {
     OpCode code;
-    unsigned int dest;
+    unsigned dest;
     int arg1;
     int arg2;
 } Instruction;
