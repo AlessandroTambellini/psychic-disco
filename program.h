@@ -1,5 +1,5 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef PROGRAM_H
+#define PROGRAM_H
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -29,7 +29,7 @@ typedef enum {
 
 typedef struct {
     OpCode code;
-    unsigned int dest;
+    unsigned dest;
     int arg1;
     int arg2;
 } Instruction;
