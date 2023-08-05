@@ -22,6 +22,7 @@ typedef enum {
     BNEI,
     BGE,
     BGEI,
+    BLEI,
     RET,
     RETI,
     HALT

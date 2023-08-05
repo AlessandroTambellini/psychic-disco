@@ -107,6 +107,9 @@ InstResult execute(Vm* vm, Instruction* inst)
     case BGEI:
         res = bgei(vm, dest, arg1, arg2);
         break;
+    case BLEI:
+        res = bgei(vm, dest, arg2, arg1);
+        break;
     case RET:
         res = ret(vm, dest);
         break;
