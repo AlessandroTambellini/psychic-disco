@@ -20,6 +20,7 @@ Execute **_build.sh_** by running:
 - `BEQI A B C`: if (data[B] == C) then PC = A
 - `BNE A B C`: if (data[B] != data[C]) then PC = A
 - `BNEI A B C`: if (data[B] != C) then PC = A
+- `BGE A B C`: if (data[B] >= data[C]) then PC = A
 - `BLEI A B C`: if (data[B] <= C) then PC = A
 - `BGEI A B C`: if (data[B] >= C) then PC = A
 - `RET A`: data[0] = data[A]
