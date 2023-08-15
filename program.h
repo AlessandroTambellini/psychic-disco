@@ -1,30 +1,53 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef PROGRAM_H
+#define PROGRAM_H
 
-typedef struct Instruction Instruction;
+#include <stdbool.h>
+#include <stdio.h>
 
-struct Instruction {
-    unsigned int code;
-    unsigned int dest;
-    unsigned int arg1;
-    unsigned int arg2;
-};
+typedef enum {
+    ADD,
+    ADDI,
+    SUB,
+    SUBI,
+    MUL,
+    MULI,
+    DIV,
+    DIVI,
+    MOV,
+    MOVI,
+    B,
+    BEQ,
+    BEQI,
+    BNE,
+    BNEI,
+    BGE,
+    BGEI,
+    BLEI,
+    RET,
+    RETI,
+    HALT
+} OpCode;
 
-typedef struct Program Program;
+typedef struct {
+    OpCode code;
+    unsigned dest;
+    int arg1;
+    int arg2;
+} Instruction;
 
-struct Program {
+typedef struct {
     Instruction *v;
     size_t capacity; // maximum size before re-init
-    size_t size; // current Actions size
-};
+    size_t size; // current size
+} Program;
 
-int program_init(Program *);
-int program_deinit(Program *);
-size_t program_size(Program *);
-int program_inc_capacity(Program *);
-int program_add(Program *, Instruction);
-Instruction *program_fetch(Program *, size_t); // program, index
-void program_print(Program *);
-void inst_print(Instruction, size_t); // inst, index
+bool program_init(Program *program);
+bool program_deinit(Program *program);
+size_t program_size(Program *program);
+bool program_inc_capacity(Program *program);
+bool program_add(Program *program, Instruction inst);
+void program_print(Program *program);
+void inst_print(Instruction inst, size_t index);
+Instruction *program_fetch(Program *program, size_t index);
 
 #endif
