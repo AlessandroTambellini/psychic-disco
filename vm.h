@@ -4,7 +4,7 @@
 #include "program.h"
 #include "stddef.h"
 
-#define DATA_SIZE 1000
+#define DATA_SIZE 1024
 
 typedef enum {
     OK,

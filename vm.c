@@ -131,10 +131,10 @@ InstResult execute(Vm *vm, Instruction *inst)
     arg >= 0 && arg < DATA_SIZE
 
 #define CHECK_DATA_BOUNDS_2(arg1, arg2) \
-    arg1 >= 0 && arg1 < DATA_SIZE&& arg2 >= 0 && arg2 < DATA_SIZE
+    arg1 >= 0 && arg1 < DATA_SIZE && arg2 >= 0 && arg2 < DATA_SIZE
 
 #define CHECK_DATA_BOUNDS_3(arg1, arg2, arg3) \
-    arg1 >= 0 && arg1 < DATA_SIZE&& arg2 >= 0 && arg2 < DATA_SIZE&& arg3 >= 0 && arg3 < DATA_SIZE
+    arg1 >= 0 && arg1 < DATA_SIZE && arg2 >= 0 && arg2 < DATA_SIZE && arg3 >= 0 && arg3 < DATA_SIZE
 
 // Instructions
 InstResult add(Vm *vm, int dest, int arg1, int arg2)

@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
 #include "program.h"
 
 bool program_init(Program *program)
@@ -33,10 +35,8 @@ size_t program_size(Program *program)
     return program->size;
 }
 
-bool program_inc_capacity(Program *program)
+bool program_resize(Program *program, size_t capacity_new)
 {
-    size_t capacity_new = 2 * program->capacity;
-
     Instruction *v_new = realloc(program->v, capacity_new * sizeof(Instruction));
     if (v_new == NULL) {
         printf("Memory reallocation failed.\n");
@@ -45,6 +45,32 @@ bool program_inc_capacity(Program *program)
 
     program->v = v_new;
     program->capacity = capacity_new;
+
+    return true;
+}
+
+bool program_inc_capacity(Program *program)
+{
+    size_t capacity_new = 2 * program->capacity;
+    return program_resize(program, capacity_new);
+}
+
+bool program_merge(Program *program1, Program *program2)
+{
+    bool rv = program_resize(program1, program1->capacity + program2->capacity);
+    if (!rv) {
+        printf("Failed resize during program merge.\n");
+        return false;
+    }
+
+    Instruction *dst = program1->v + program1->size;
+    Instruction *src = program2->v;
+    size_t src_size = program2->size * sizeof(Instruction);
+
+    memcpy(dst, src, src_size);
+    program1->size += program2->size;
+
+    program_deinit(program2);
 
     return true;
 }
@@ -66,12 +92,16 @@ bool program_add(Program *program, Instruction inst)
     return true;
 }
 
+Instruction *program_fetch(Program *program, size_t index)
+{
+    return &program->v[index];
+}
+
 void program_print(Program *program)
 {
     Instruction *v = program->v;
 
-    for (size_t i = 0; i < program_size(program); i++)
-    {
+    for (size_t i = 0; i < program_size(program); i++) {
         inst_print(v[i], i);
     }
 }
@@ -80,9 +110,4 @@ void inst_print(Instruction inst, size_t index)
 {
     printf("[%zu]:\t%i %i %i %i\n", index, inst.code,
         inst.dest, inst.arg1, inst.arg2);
-}
-
-Instruction *program_fetch(Program *program, size_t index)
-{
-    return &program->v[index];
 }
