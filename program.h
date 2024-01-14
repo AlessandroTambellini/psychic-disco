@@ -29,21 +29,11 @@ typedef enum {
     HALT
 } OpCode;
 
-// Instruction struct
-//
-// +----------+----------+
-// | code(16) | dest(16) |
-// +----------+----------+
-// |       arg1(32)      |
-// +---------------------+
-// |       arg2(32)      |
-// +---------------------+
-
 typedef struct {
-    uint16_t code; // OpCode enum
-    uint16_t dest;
-    int32_t arg1;
-    int32_t arg2;
+    int code; // enum OpCode
+    int dest;
+    int arg1;
+    int arg2;
 } Instruction;
 
 typedef struct {
@@ -52,12 +42,45 @@ typedef struct {
     size_t size; // current size
 } Program;
 
+typedef enum {
+    MERGE,
+    EXEC,
+    RESET,
+} MsgType;
+
+// struct Msg
+// +------------------+
+// |     type(32)     |
+// +------------------+
+// |     size(32)     |
+// +------------------+
+// |   v[0][0](32)    |
+// +------------------+
+// |       ....       |
+// +------------------+
+// |   v[0][2](32)    |
+// +------------------+
+// |       ....       |
+// +------------------+
+// | v[size-1][2](32) |
+// +------------------+
+
+#define PAYLOAD_SIZE 4096
+#define MSG_SIZE (4 + 4 + PAYLOAD_SIZE)
+
+typedef struct {
+    int type;
+    uint32_t size;
+    Instruction v[PAYLOAD_SIZE];
+} Msg;
+
 bool program_init(Program *program);
 bool program_deinit(Program *program);
 size_t program_size(Program *program);
 bool program_resize(Program *program, size_t capacity_new);
 bool program_inc_capacity(Program *program);
 bool program_merge(Program *program1, Program *program2);
+bool program_merge_msg(Program *program, Msg *msg);
 bool program_add(Program *program, Instruction inst);
 void program_print(Program *program);
 void inst_print(Instruction inst, size_t index);

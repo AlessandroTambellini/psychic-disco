@@ -75,7 +75,7 @@ InstResult execute(Vm *vm, Instruction *inst)
         res = muli(vm, dest, arg1, arg2);
         break;
     case DIV:
-        res = div(vm, dest, arg1, arg2);
+        res = ddiv(vm, dest, arg1, arg2);
         break;
     case DIVI:
         res = divi(vm, dest, arg1, arg2);
@@ -197,7 +197,7 @@ InstResult muli(Vm *vm, int dest, int arg1, int arg2)
     return DATA_OVERFLOW;
 }
 
-InstResult div(Vm *vm, int dest, int arg1, int arg2)
+InstResult ddiv(Vm *vm, int dest, int arg1, int arg2)
 {
     if (CHECK_DATA_BOUNDS_3(dest, arg1, arg2)) {
         int den = vm->data[arg2];

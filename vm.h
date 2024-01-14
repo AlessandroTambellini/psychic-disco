@@ -48,7 +48,8 @@ InstResult subi(Vm *vm, int dest, int arg1, int arg2);
 InstResult subi(Vm *vm, int dest, int arg1, int arg2);
 InstResult mul(Vm *vm, int dest, int arg1, int arg2);
 InstResult muli(Vm *vm, int dest, int arg1, int arg2);
-InstResult div(Vm *vm, int dest, int arg1, int arg2);
+// Renamed to ddiv to avoid conflict with stdlib's div_t div(int, int)
+InstResult ddiv(Vm *vm, int dest, int arg1, int arg2);
 InstResult divi(Vm *vm, int dest, int arg1, int arg2);
 
 InstResult movi(Vm *vm, int dest, int arg1);

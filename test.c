@@ -27,7 +27,7 @@ int main()
     program_add(&program2, i7);
 
     program_merge(&program1, &program2);
-    program_print(&program1);
+    program_deinit(&program2);
 
     // Create vm
     Vm vm;

@@ -36,6 +36,9 @@
 *.x86_64
 *.hex
 psychic-disco
+server
+client
+test
 
 # Debug files
 *.dSYM/
