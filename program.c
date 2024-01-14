@@ -55,6 +55,12 @@ bool program_inc_capacity(Program *program)
     return program_resize(program, capacity_new);
 }
 
+bool program_clear(Program *program)
+{
+    program->size = 0;
+    return true;
+}
+
 bool program_merge(Program *program1, Program *program2)
 {
     bool rv = program_resize(program1, program1->capacity + program2->capacity);

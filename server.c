@@ -25,35 +25,62 @@ static bool read_all(int connfd, int *buf, size_t n)
     return 0;
 }
 
+static bool handle_merge(int connfd, Program *program, Msg *msg)
+{
+    bool rv = read_all(connfd, (int *)msg->v, msg->size);
+    if (!rv) {
+        die("Failed read()\n");
+        return false;
+    }
+    program_merge_msg(program, msg);
+    return true;
+}
+
+static bool handle_exec(int connfd, Program *program)
+{
+    Vm vm = {0};
+    vm_init(&vm, program);
+    loop(&vm);
+    return true;
+}
+
 static bool handle_connection(int connfd, Program *program)
 {
     bool rv;
-    Msg msg = {0};
-    Vm vm = {0};
+    int type;
+    size_t size;
 
-    rv = read_all(connfd, (int *)&msg, 8);
+    rv = read_all(connfd, (int *)&type, 4);
     if (!rv) {
         die("Failed read()\n");
         return false;
     }
 
-    switch (msg.type) {
+    rv = read_all(connfd, (int *)&size, 4);
+    if (!rv) {
+        die("Failed read()\n");
+        return false;
+    }
+
+    switch (type) {
         case MERGE:
-            rv = read_all(connfd, (int *)msg.v, msg.size);
-            if (!rv) {
-                die("Failed read()\n");
-                return false;
-            }
-            program_merge_msg(program, &msg);
+            printf("[INFO]: Merging message of size %zu.\n", size);
+            Msg msg = (Msg) {
+                .type = type,
+                .size = size,
+            };
+            handle_merge(connfd, program, &msg);
             break;
         case EXEC:
-            vm_init(&vm, program);
-            loop(&vm);
+            printf("[INFO]: Executing program of size %zu.\n", program->size);
+            handle_exec(connfd, program);
             break;
         case RESET:
-            // program_clear(program);
+            printf("[INFO]: Clearing %zu instructions.\n", program->size);
+            program_clear(program);
             break;
         default:
+            printf("[ERROR]: Method of type %d unknown.\n", type);
             return false;
     }
 

@@ -48,29 +48,12 @@ typedef enum {
     RESET,
 } MsgType;
 
-// struct Msg
-// +------------------+
-// |     type(32)     |
-// +------------------+
-// |     size(32)     |
-// +------------------+
-// |   v[0][0](32)    |
-// +------------------+
-// |       ....       |
-// +------------------+
-// |   v[0][2](32)    |
-// +------------------+
-// |       ....       |
-// +------------------+
-// | v[size-1][2](32) |
-// +------------------+
-
 #define PAYLOAD_SIZE 4096
 #define MSG_SIZE (4 + 4 + PAYLOAD_SIZE)
 
 typedef struct {
     int type;
-    uint32_t size;
+    size_t size;
     Instruction v[PAYLOAD_SIZE];
 } Msg;
 
@@ -79,6 +62,7 @@ bool program_deinit(Program *program);
 size_t program_size(Program *program);
 bool program_resize(Program *program, size_t capacity_new);
 bool program_inc_capacity(Program *program);
+bool program_clear(Program *program);
 bool program_merge(Program *program1, Program *program2);
 bool program_merge_msg(Program *program, Msg *msg);
 bool program_add(Program *program, Instruction inst);
