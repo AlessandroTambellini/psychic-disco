@@ -49,11 +49,10 @@ typedef enum {
 } MsgType;
 
 #define PAYLOAD_SIZE 4096
-#define MSG_SIZE (4 + 4 + PAYLOAD_SIZE)
 
 typedef struct {
-    int type;
-    size_t size;
+    int32_t type;
+    uint32_t size;
     Instruction v[PAYLOAD_SIZE];
 } Msg;
 

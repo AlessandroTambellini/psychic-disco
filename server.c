@@ -12,7 +12,7 @@ static void die(char *s)
     exit(1);
 }
 
-static bool read_all(int connfd, int *buf, size_t n)
+static bool read_all(int connfd, void *buf, size_t n)
 {
     while (n > 0) {
         ssize_t rv = read(connfd, buf, n);
@@ -22,17 +22,25 @@ static bool read_all(int connfd, int *buf, size_t n)
         n -= rv;
         buf += rv;
     }
-    return 0;
+    return true;
 }
 
 static bool handle_merge(int connfd, Program *program, Msg *msg)
 {
-    bool rv = read_all(connfd, (int *)msg->v, msg->size);
+    bool rv;
+
+    rv = read_all(connfd, msg->v, msg->size * sizeof(Instruction));
     if (!rv) {
-        die("Failed read()\n");
+        printf("[ERROR]: Failed read()\n");
         return false;
     }
-    program_merge_msg(program, msg);
+
+    rv = program_merge_msg(program, msg);
+    if (!rv) {
+        printf("[ERROR]: Failed program_merge_msg()\n");
+        return false;
+    }
+
     return true;
 }
 
@@ -47,16 +55,15 @@ static bool handle_exec(int connfd, Program *program)
 static bool handle_connection(int connfd, Program *program)
 {
     bool rv;
-    int type;
-    size_t size;
+    int32_t type;
+    uint32_t size;
 
-    rv = read_all(connfd, (int *)&type, 4);
+    rv = read_all(connfd, &type, 4);
     if (!rv) {
-        die("Failed read()\n");
         return false;
     }
 
-    rv = read_all(connfd, (int *)&size, 4);
+    rv = read_all(connfd, &size, 4);
     if (!rv) {
         die("Failed read()\n");
         return false;
@@ -64,7 +71,7 @@ static bool handle_connection(int connfd, Program *program)
 
     switch (type) {
         case MERGE:
-            printf("[INFO]: Merging message of size %zu.\n", size);
+            printf("[INFO]: Merging message of size %u.\n", size);
             Msg msg = (Msg) {
                 .type = type,
                 .size = size,
@@ -96,9 +103,9 @@ int main()
 
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
-    addr.sin_port = 8080;               // port 8080
+    addr.sin_port = ntohs(8080);        // port 8080
     addr.sin_addr.s_addr = ntohl(0);    // addr 0.0.0.0
-    int rv = bind(fd, (const struct sockaddr *)&addr, (socklen_t)sizeof(addr));
+    int rv = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
     if (rv < 0) {
         die("Failed bind()\n");
     }
@@ -116,10 +123,22 @@ int main()
             continue;
         }
 
-        handle_connection(connfd, &program);
+        // Msg msg = {0};
+        // read(connfd, &msg, 4 + 4 + PAYLOAD_SIZE);
+        // for (int i = 0; i < 7; i++) {
+        //     printf("%d\n", msg.v[i].dest);
+        // }
+        while (1) {
+            bool rv = handle_connection(connfd, &program);
+            if (!rv) {
+                break;
+            }
+        }
 
         close(connfd);
     }
+
+    close(fd);
 
     return 0;
 }
