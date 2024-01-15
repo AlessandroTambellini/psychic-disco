@@ -13,6 +13,15 @@ typedef enum {
     DIVISION_BY_ZERO
 } InstResult;
 
+#define RES_STRING(res) #res
+static const char *res_names[] = {
+    RES_STRING(OK),
+    RES_STRING(DATA_OVERFLOW),
+    RES_STRING(MALFORMED_INSTRUCTION),
+    RES_STRING(DIVISION_BY_ZERO)
+};
+#undef RES_STRING
+
 typedef struct {
     Program program;
     int pc;
