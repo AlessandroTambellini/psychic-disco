@@ -76,29 +76,32 @@ int main()
     msg1.v[5] = i6;
     msg1.v[6] = i7;
 
-    write_all(fd, &msg1, 4 + 4 + msg1.size * sizeof(Instruction));
 
     // EXEC message
     Msg msg2 = {0};
     msg2.type = EXEC;
-    write_all(fd, &msg2, 4 + 4);
 
     // RESET message
     Msg msg3 = {0};
     msg3.type = RESET;
-    write_all(fd, &msg3, 4 + 4);
+
+    size_t requests = 5;
+    for (size_t i = 0; i < requests; i++) {
+        write_all(fd, &msg1, 4 + 4 + msg1.size * sizeof(Instruction));
+        write_all(fd, &msg2, 4 + 4);
+        write_all(fd, &msg3, 4 + 4);
+    }
 
     // Read ResultMsg
     ResultMsg res = {0};
-
-    read_all(fd, &res, 4);
-    printf("Result1: %d\n", res.ret);
-
-    read_all(fd, &res, 4);
-    printf("Result2: %d\n", res.ret);
-
-    read_all(fd, &res, 4);
-    printf("Result3: %d\n", res.ret);
+    for (size_t i = 0; i < requests; i++) {
+        read_all(fd, &res, 4);
+        printf("Result1: %d\n", res.ret);
+        read_all(fd, &res, 4);
+        printf("Result2: %d\n", res.ret);
+        read_all(fd, &res, 4);
+        printf("Result3: %d\n", res.ret);
+    }
 
     close(fd);
 
