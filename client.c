@@ -12,6 +12,19 @@ static void die(char *s)
     exit(1);
 }
 
+static bool read_all(int fd, void *buf, size_t n)
+{
+    while (n > 0) {
+        ssize_t rv = read(fd, buf, n);
+        if (rv <= 0) {
+            return false;
+        }
+        n -= rv;
+        buf += rv;
+    }
+    return true;
+}
+
 static bool write_all(int fd, void *buf, size_t n)
 {
     while (n > 0) {
@@ -27,11 +40,6 @@ static bool write_all(int fd, void *buf, size_t n)
 
 int main()
 {
-    // Msg msg = {0};
-    // msg.type = 69;
-    // msg.size = 420;
-    // printf("%d\n", ((int *)&msg)[0]);
-
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         die("Failed socket()\n");
@@ -47,7 +55,7 @@ int main()
         die("Failed connect()\n");
     }
 
-    // MERGE message
+    // MERGE message (factorial of 5)
     Msg msg1 = {0};
     msg1.type = MERGE;
     msg1.size = 7;
@@ -74,6 +82,23 @@ int main()
     Msg msg2 = {0};
     msg2.type = EXEC;
     write_all(fd, &msg2, 4 + 4);
+
+    // RESET message
+    Msg msg3 = {0};
+    msg3.type = RESET;
+    write_all(fd, &msg3, 4 + 4);
+
+    // Read ResultMsg
+    ResultMsg res = {0};
+
+    read_all(fd, &res, 4);
+    printf("Result1: %d\n", res.ret);
+
+    read_all(fd, &res, 4);
+    printf("Result2: %d\n", res.ret);
+
+    read_all(fd, &res, 4);
+    printf("Result3: %d\n", res.ret);
 
     close(fd);
 

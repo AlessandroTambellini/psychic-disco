@@ -25,6 +25,20 @@ static bool read_all(int connfd, void *buf, size_t n)
     return true;
 }
 
+static bool write_all(int connfd, void *buf, size_t n)
+{
+    while (n > 0) {
+        ssize_t rv = write(connfd, buf, n);
+        if (rv <= 0) {
+            return false;
+        }
+        n -= rv;
+        buf += rv;
+    }
+    return true;
+}
+
+
 static bool handle_merge(int connfd, Program *program, Msg *msg)
 {
     bool rv;
@@ -41,6 +55,13 @@ static bool handle_merge(int connfd, Program *program, Msg *msg)
         return false;
     }
 
+    ResultMsg res = {0};
+    rv = write_all(connfd, &res, 4);
+    if (!rv) {
+        printf("[ERROR]: Failed write()\n");
+        return false;
+    }
+
     return true;
 }
 
@@ -49,6 +70,29 @@ static bool handle_exec(int connfd, Program *program)
     Vm vm = {0};
     vm_init(&vm, program);
     loop(&vm);
+
+    ResultMsg res = {vm.data[0]};
+    bool rv = write_all(connfd, &res, 4);
+    if (!rv) {
+        printf("[ERROR]: Failed write()\n");
+        return false;
+    }
+
+    return true;
+}
+
+static bool handle_reset(int connfd, Program *program)
+{
+    ResultMsg res = {
+        program_clear(program) ? 0 : 1
+    };
+
+    bool rv = write_all(connfd, &res, 4);
+    if (!rv) {
+        printf("[ERROR]: Failed write()\n");
+        return false;
+    }
+
     return true;
 }
 
@@ -84,7 +128,7 @@ static bool handle_connection(int connfd, Program *program)
             break;
         case RESET:
             printf("[INFO]: Clearing %zu instructions.\n", program->size);
-            program_clear(program);
+            handle_reset(connfd, program);
             break;
         default:
             printf("[ERROR]: Method of type %d unknown.\n", type);
@@ -115,6 +159,7 @@ int main()
     Program program;
     program_init(&program);
 
+    printf("[INFO]: Listening on port 8080...\n");
     while (1) {
         struct sockaddr_in client_addr = {0};
         socklen_t socklen = sizeof(client_addr);
@@ -123,17 +168,7 @@ int main()
             continue;
         }
 
-        // Msg msg = {0};
-        // read(connfd, &msg, 4 + 4 + PAYLOAD_SIZE);
-        // for (int i = 0; i < 7; i++) {
-        //     printf("%d\n", msg.v[i].dest);
-        // }
-        while (1) {
-            bool rv = handle_connection(connfd, &program);
-            if (!rv) {
-                break;
-            }
-        }
+        while (handle_connection(connfd, &program));
 
         close(connfd);
     }

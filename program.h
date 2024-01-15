@@ -56,6 +56,10 @@ typedef struct {
     Instruction v[PAYLOAD_SIZE];
 } Msg;
 
+typedef struct {
+    int ret;
+} ResultMsg;
+
 bool program_init(Program *program);
 bool program_deinit(Program *program);
 size_t program_size(Program *program);
