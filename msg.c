@@ -47,12 +47,12 @@ size_t split_program(Program *program, RequestMsg *msg)
         ? PAYLOAD_SIZE
         : program_size(program);
 
-    memcpy(msg_data(msg), program_data(program), size);
+    memcpy(msg_data(msg), program_data(program), size * sizeof(Instruction));
 
     size_t size_new = program_size(program) - size;
     memmove(program_data(program),
             program_data(program) + size,
-            size_new);
+            size_new * sizeof(Instruction));
 
     program->size = size_new;
 

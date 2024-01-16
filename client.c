@@ -77,15 +77,31 @@ int main()
     program_add(&program, i7);
 
     // MERGE message
+    size_t count = 0;
     RequestMsg msg;
+    ResultMsg res;
+
     while (split_program(&program, &msg)) {
         write_all(fd, &msg, sizeof(RequestMsgH) + msg_size(&msg) * sizeof(Instruction));
+        count++;
     }
 
     // Results
-    ResultMsg res;
+    for (size_t i = 0; i < count; i++) {
+        read_all(fd, &res, sizeof(ResultMsg));
+    }
+
+    // EXEC message
+    msg = (RequestMsg) {{EXEC}};
+    write_all(fd, &msg, sizeof(RequestMsgH));
+
+    // Result
     read_all(fd, &res, sizeof(ResultMsg));
     printf("msg %d: %d\n", res.id, res.ret);
+
+    // RESET message
+    msg = (RequestMsg) {{RESET}};
+    write_all(fd, &msg, sizeof(RequestMsgH));
 
     close(fd);
 
