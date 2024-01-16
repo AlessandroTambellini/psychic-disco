@@ -57,7 +57,7 @@ int main()
     }
 
     // MERGE message (factorial of 5)
-    RequestMsg msg1 = {{.type = MERGE, .size = 7}, {0}};
+    RequestMsg msg1 = {{.type = MERGE, .size = 7}, {}};
 
     Instruction i1 = { MOVI,    0, 5 };
     Instruction i2 = { MOV,     1, 0 };
@@ -76,13 +76,15 @@ int main()
     msg_data(&msg1)[6] = i7;
 
     // EXEC message
-    RequestMsg msg2 = {{.type = EXEC, .size = 0}, {0}};
+    RequestMsg msg2 = {{.type = EXEC}, {}};
 
     // RESET message
-    RequestMsg msg3 = {{.type = RESET, .size = 0}, {0}};
+    RequestMsg msg3 = {{.type = RESET}, {}};
 
-    size_t requests = 5;
+    // Write RequestMsg 
+    size_t requests = 200;
     for (size_t i = 0; i < requests; i++) {
+        msg1.header.id = msg2.header.id = msg3.header.id = i;
         write_all(fd, &msg1, sizeof(RequestMsgH) + msg_size(&msg1) * sizeof(Instruction));
         write_all(fd, &msg2, sizeof(RequestMsgH));
         write_all(fd, &msg3, sizeof(RequestMsgH));
@@ -94,7 +96,7 @@ int main()
         read_all(fd, &res, sizeof(ResultMsg));
         // printf("Result1: %d\n", res.ret);
         read_all(fd, &res, sizeof(ResultMsg));
-        printf("Result: %d\n", res.ret);
+        printf("msg %d: %d\n", res.id, res.ret);
         read_all(fd, &res, sizeof(ResultMsg));
         // printf("Result3: %d\n", res.ret);
     }

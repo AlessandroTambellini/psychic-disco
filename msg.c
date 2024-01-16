@@ -13,6 +13,11 @@ uint32_t msg_size(RequestMsg *msg)
     return msg->header.size;
 }
 
+uint32_t msg_id(RequestMsg *msg)
+{
+    return msg->header.id;
+}
+
 Instruction *msg_data(RequestMsg *msg)
 {
     return msg->data;

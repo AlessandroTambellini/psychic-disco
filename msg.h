@@ -12,6 +12,7 @@ typedef enum {
 typedef struct {
     int32_t type; // enum RequestMsgType
     uint32_t size;
+    uint32_t id;
 } RequestMsgH;
 
 // struct RequestMsg
@@ -19,6 +20,8 @@ typedef struct {
 // |     type(32)    |
 // +-----------------+
 // |     size(32)    |
+// +-----------------+
+// |      id(32)     |
 // +-----------------+
 // |  i[0].code(32)  |
 // +-----------------+
@@ -49,14 +52,16 @@ typedef struct {
 
 typedef struct {
     int32_t type; // enum RequestMsgType
+    uint32_t id;
     int32_t ret;
 } ResultMsg;
 
 int32_t msg_type(RequestMsg *msg);
 uint32_t msg_size(RequestMsg *msg);
+uint32_t msg_id(RequestMsg *msg);
 Instruction *msg_data(RequestMsg *msg);
 bool msg_merge_program(RequestMsg *msg, Program *program);
-bool msg_from_program(RequestMsg *msg, Program **program);
+bool msg_from_program(RequestMsg **msg, Program *program);
 bool msg_to_program(RequestMsg *msg, Program *program);
 
 #endif

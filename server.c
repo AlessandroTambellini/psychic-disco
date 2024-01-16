@@ -52,7 +52,7 @@ static bool handle_merge(int connfd, Program *program, RequestMsgH header)
     }
 
     rv = msg_merge_program(&msg, program);
-    ResultMsg res = { MERGE, rv ? 0 : 1 };
+    ResultMsg res = { MERGE, header.id, rv ? 0 : 1 };
 
     rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
@@ -63,13 +63,13 @@ static bool handle_merge(int connfd, Program *program, RequestMsgH header)
     return true;
 }
 
-static bool handle_exec(int connfd, Program *program)
+static bool handle_exec(int connfd, Program *program, RequestMsgH header)
 {
     Vm vm = {0};
     vm_init(&vm, program);
     loop(&vm);
 
-    ResultMsg res = { EXEC, vm.data[0] };
+    ResultMsg res = { EXEC, header.id, vm.data[0]};
     bool rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
         printf("[ERROR]: Failed write()\n");
@@ -79,10 +79,11 @@ static bool handle_exec(int connfd, Program *program)
     return true;
 }
 
-static bool handle_reset(int connfd, Program *program)
+static bool handle_reset(int connfd, Program *program, RequestMsgH header)
 {
     ResultMsg res = {
         RESET,
+        header.id,
         program_clear(program) ? 0 : 1
     };
 
@@ -111,11 +112,11 @@ static bool handle_connection(int connfd, Program *program)
             break;
         case EXEC:
             printf("[INFO]: Executing program of size %zu.\n", program_size(program));
-            handle_exec(connfd, program);
+            handle_exec(connfd, program, header);
             break;
         case RESET:
             printf("[INFO]: Clearing %zu instructions.\n", program_size(program));
-            handle_reset(connfd, program);
+            handle_reset(connfd, program, header);
             break;
         default:
             printf("[ERROR]: Method of type %d unknown.\n", header.type);
