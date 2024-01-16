@@ -13,11 +13,11 @@ make
 Run server:
 
 ```bash
-`./server`
+./server
 ```
 
 Run client:
 
 ```bash
-`./client`
+./client
 ```
