@@ -22,7 +22,7 @@ void memory_print(Vm *vm)
 void loop(Vm *vm)
 {
     Instruction *inst;
-    while (vm->pc < vm->program.size) {
+    while (vm->pc < program_size(&vm->program)) {
         // Fetch instruction
         inst = fetch(vm);
 

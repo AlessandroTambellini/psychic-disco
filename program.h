@@ -42,32 +42,15 @@ typedef struct {
     size_t size; // current size
 } Program;
 
-typedef enum {
-    MERGE,
-    EXEC,
-    RESET,
-} MsgType;
-
-#define PAYLOAD_SIZE 4096
-
-typedef struct {
-    int32_t type;
-    uint32_t size;
-    Instruction v[PAYLOAD_SIZE];
-} Msg;
-
-typedef struct {
-    int ret;
-} ResultMsg;
-
 bool program_init(Program *program);
 bool program_deinit(Program *program);
+Instruction *program_data(Program *program);
+size_t program_capacity(Program *program);
 size_t program_size(Program *program);
 bool program_resize(Program *program, size_t capacity_new);
 bool program_inc_capacity(Program *program);
 bool program_clear(Program *program);
 bool program_merge(Program *program1, Program *program2);
-bool program_merge_msg(Program *program, Msg *msg);
 bool program_add(Program *program, Instruction inst);
 void program_print(Program *program);
 void inst_print(Instruction inst, size_t index);

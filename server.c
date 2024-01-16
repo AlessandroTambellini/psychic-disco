@@ -5,6 +5,7 @@
 
 #include "program.h"
 #include "vm.h"
+#include "msg.h"
 
 static void die(char *s)
 {
@@ -39,24 +40,21 @@ static bool write_all(int connfd, void *buf, size_t n)
 }
 
 
-static bool handle_merge(int connfd, Program *program, Msg *msg)
+static bool handle_merge(int connfd, Program *program, RequestMsgH header)
 {
     bool rv;
+    RequestMsg msg = { header };
 
-    rv = read_all(connfd, msg->v, msg->size * sizeof(Instruction));
+    rv = read_all(connfd, msg_data(&msg), msg_size(&msg) * sizeof(Instruction));
     if (!rv) {
         printf("[ERROR]: Failed read()\n");
         return false;
     }
 
-    rv = program_merge_msg(program, msg);
-    if (!rv) {
-        printf("[ERROR]: Failed program_merge_msg()\n");
-        return false;
-    }
+    rv = msg_merge_program(&msg, program);
+    ResultMsg res = { MERGE, rv ? 0 : 1 };
 
-    ResultMsg res = {0};
-    rv = write_all(connfd, &res, 4);
+    rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
         printf("[ERROR]: Failed write()\n");
         return false;
@@ -71,8 +69,8 @@ static bool handle_exec(int connfd, Program *program)
     vm_init(&vm, program);
     loop(&vm);
 
-    ResultMsg res = {vm.data[0]};
-    bool rv = write_all(connfd, &res, 4);
+    ResultMsg res = { EXEC, vm.data[0] };
+    bool rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
         printf("[ERROR]: Failed write()\n");
         return false;
@@ -84,10 +82,11 @@ static bool handle_exec(int connfd, Program *program)
 static bool handle_reset(int connfd, Program *program)
 {
     ResultMsg res = {
+        RESET,
         program_clear(program) ? 0 : 1
     };
 
-    bool rv = write_all(connfd, &res, 4);
+    bool rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
         printf("[ERROR]: Failed write()\n");
         return false;
@@ -98,40 +97,28 @@ static bool handle_reset(int connfd, Program *program)
 
 static bool handle_connection(int connfd, Program *program)
 {
-    bool rv;
-    int32_t type;
-    uint32_t size;
+    RequestMsgH header = {0};
 
-    rv = read_all(connfd, &type, 4);
+    bool rv = read_all(connfd, &header, sizeof(header));
     if (!rv) {
         return false;
     }
 
-    rv = read_all(connfd, &size, 4);
-    if (!rv) {
-        die("Failed read()\n");
-        return false;
-    }
-
-    switch (type) {
+    switch (header.type) {
         case MERGE:
-            printf("[INFO]: Merging message of size %u.\n", size);
-            Msg msg = (Msg) {
-                .type = type,
-                .size = size,
-            };
-            handle_merge(connfd, program, &msg);
+            printf("[INFO]: Merging message of size %u.\n", header.size);
+            handle_merge(connfd, program, header);
             break;
         case EXEC:
-            printf("[INFO]: Executing program of size %zu.\n", program->size);
+            printf("[INFO]: Executing program of size %zu.\n", program_size(program));
             handle_exec(connfd, program);
             break;
         case RESET:
-            printf("[INFO]: Clearing %zu instructions.\n", program->size);
+            printf("[INFO]: Clearing %zu instructions.\n", program_size(program));
             handle_reset(connfd, program);
             break;
         default:
-            printf("[ERROR]: Method of type %d unknown.\n", type);
+            printf("[ERROR]: Method of type %d unknown.\n", header.type);
             return false;
     }
 
