@@ -39,7 +39,6 @@ static bool write_all(int connfd, void *buf, size_t n)
     return true;
 }
 
-
 static bool handle_merge(int connfd, Program *program, RequestMsgH header)
 {
     bool rv;
@@ -161,6 +160,7 @@ int main()
         close(connfd);
     }
 
+    program_deinit(&program);
     close(fd);
 
     return 0;
