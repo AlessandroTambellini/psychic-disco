@@ -30,6 +30,16 @@ bool program_deinit(Program *program)
     return true;
 }
 
+Instruction *program_data(Program *program)
+{
+    return program->v;
+}
+
+size_t program_capacity(Program *program)
+{
+    return program->capacity;
+}
+
 size_t program_size(Program *program)
 {
     return program->size;
@@ -75,24 +85,6 @@ bool program_merge(Program *program1, Program *program2)
 
     memcpy(dst, src, src_size);
     program1->size += program2->size;
-
-    return true;
-}
-
-bool program_merge_msg(Program *program, Msg *msg)
-{
-    bool rv = program_resize(program, program->capacity + msg->size);
-    if (!rv) {
-        printf("Failed resize during program merge.\n");
-        return false;
-    }
-
-    Instruction *src = msg->v;
-    Instruction *dst = program->v + program->size;
-    size_t src_size = msg->size * sizeof(Instruction);
-
-    memcpy(dst, src, src_size);
-    program->size += msg->size;
 
     return true;
 }

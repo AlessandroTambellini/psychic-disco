@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "program.h"
+#include "msg.h"
 
 static void die(char *s)
 {
@@ -56,9 +57,7 @@ int main()
     }
 
     // MERGE message (factorial of 5)
-    Msg msg1 = {0};
-    msg1.type = MERGE;
-    msg1.size = 7;
+    RequestMsg msg1 = {{.type = MERGE, .size = 7}, {}};
 
     Instruction i1 = { MOVI,    0, 5 };
     Instruction i2 = { MOV,     1, 0 };
@@ -68,39 +67,38 @@ int main()
     Instruction i6 = { B,       2 };
     Instruction i7 = { HALT };
 
-    msg1.v[0] = i1;
-    msg1.v[1] = i2;
-    msg1.v[2] = i3;
-    msg1.v[3] = i4;
-    msg1.v[4] = i5;
-    msg1.v[5] = i6;
-    msg1.v[6] = i7;
-
+    msg_data(&msg1)[0] = i1;
+    msg_data(&msg1)[1] = i2;
+    msg_data(&msg1)[2] = i3;
+    msg_data(&msg1)[3] = i4;
+    msg_data(&msg1)[4] = i5;
+    msg_data(&msg1)[5] = i6;
+    msg_data(&msg1)[6] = i7;
 
     // EXEC message
-    Msg msg2 = {0};
-    msg2.type = EXEC;
+    RequestMsg msg2 = {{.type = EXEC}, {}};
 
     // RESET message
-    Msg msg3 = {0};
-    msg3.type = RESET;
+    RequestMsg msg3 = {{.type = RESET}, {}};
 
-    size_t requests = 5;
+    // Write RequestMsg 
+    size_t requests = 200;
     for (size_t i = 0; i < requests; i++) {
-        write_all(fd, &msg1, 4 + 4 + msg1.size * sizeof(Instruction));
-        write_all(fd, &msg2, 4 + 4);
-        write_all(fd, &msg3, 4 + 4);
+        msg1.header.id = msg2.header.id = msg3.header.id = i;
+        write_all(fd, &msg1, sizeof(RequestMsgH) + msg_size(&msg1) * sizeof(Instruction));
+        write_all(fd, &msg2, sizeof(RequestMsgH));
+        write_all(fd, &msg3, sizeof(RequestMsgH));
     }
 
     // Read ResultMsg
     ResultMsg res = {0};
     for (size_t i = 0; i < requests; i++) {
-        read_all(fd, &res, 4);
-        printf("Result1: %d\n", res.ret);
-        read_all(fd, &res, 4);
-        printf("Result2: %d\n", res.ret);
-        read_all(fd, &res, 4);
-        printf("Result3: %d\n", res.ret);
+        read_all(fd, &res, sizeof(ResultMsg));
+        // printf("Result1: %d\n", res.ret);
+        read_all(fd, &res, sizeof(ResultMsg));
+        printf("msg %d: %d\n", res.id, res.ret);
+        read_all(fd, &res, sizeof(ResultMsg));
+        // printf("Result3: %d\n", res.ret);
     }
 
     close(fd);
