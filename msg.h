@@ -36,7 +36,8 @@ typedef struct {
 // |  v[n].arg2(32)  |
 // +-----------------+
 
-#define PAYLOAD_SIZE 4096
+// #define PAYLOAD_SIZE 4096
+#define PAYLOAD_SIZE 2 
 
 typedef struct {
     RequestMsgH header;
@@ -60,8 +61,7 @@ int32_t msg_type(RequestMsg *msg);
 uint32_t msg_size(RequestMsg *msg);
 uint32_t msg_id(RequestMsg *msg);
 Instruction *msg_data(RequestMsg *msg);
-bool msg_merge_program(RequestMsg *msg, Program *program);
-bool msg_from_program(RequestMsg **msg, Program *program);
-bool msg_to_program(RequestMsg *msg, Program *program);
+bool merge_program(RequestMsg *msg, Program *program);
+size_t split_program(Program *program, RequestMsg *msg);
 
 #endif

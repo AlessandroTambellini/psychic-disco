@@ -23,7 +23,7 @@ Instruction *msg_data(RequestMsg *msg)
     return msg->data;
 }
 
-bool msg_merge_program(RequestMsg *msg, Program *program)
+bool merge_program(RequestMsg *msg, Program *program)
 {
     bool rv = program_resize(program, program_capacity(program) + msg_size(msg));
     if (!rv) {
@@ -39,4 +39,28 @@ bool msg_merge_program(RequestMsg *msg, Program *program)
     program->size += msg_size(msg);
 
     return true;
+}
+
+size_t split_program(Program *program, RequestMsg *msg)
+{
+    size_t size = program_size(program) > PAYLOAD_SIZE
+        ? PAYLOAD_SIZE
+        : program_size(program);
+
+    memcpy(msg_data(msg), program_data(program), size);
+
+    size_t size_new = program_size(program) - size;
+    memmove(program_data(program),
+            program_data(program) + size,
+            size_new);
+
+    program->size = size_new;
+
+    msg->header = (RequestMsgH) {
+        .type = MERGE,
+        .size = size,
+        .id = 0
+    };
+
+    return size;
 }

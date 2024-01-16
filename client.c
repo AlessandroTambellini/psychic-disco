@@ -56,8 +56,9 @@ int main()
         die("Failed connect()\n");
     }
 
-    // MERGE message (factorial of 5)
-    RequestMsg msg1 = {{.type = MERGE, .size = 7}, {}};
+    // Create program (factorial of 5)
+    Program program;
+    program_init(&program);
 
     Instruction i1 = { MOVI,    0, 5 };
     Instruction i2 = { MOV,     1, 0 };
@@ -67,39 +68,24 @@ int main()
     Instruction i6 = { B,       2 };
     Instruction i7 = { HALT };
 
-    msg_data(&msg1)[0] = i1;
-    msg_data(&msg1)[1] = i2;
-    msg_data(&msg1)[2] = i3;
-    msg_data(&msg1)[3] = i4;
-    msg_data(&msg1)[4] = i5;
-    msg_data(&msg1)[5] = i6;
-    msg_data(&msg1)[6] = i7;
+    program_add(&program, i1);
+    program_add(&program, i2);
+    program_add(&program, i3);
+    program_add(&program, i4);
+    program_add(&program, i5);
+    program_add(&program, i6);
+    program_add(&program, i7);
 
-    // EXEC message
-    RequestMsg msg2 = {{.type = EXEC}, {}};
-
-    // RESET message
-    RequestMsg msg3 = {{.type = RESET}, {}};
-
-    // Write RequestMsg 
-    size_t requests = 200;
-    for (size_t i = 0; i < requests; i++) {
-        msg1.header.id = msg2.header.id = msg3.header.id = i;
-        write_all(fd, &msg1, sizeof(RequestMsgH) + msg_size(&msg1) * sizeof(Instruction));
-        write_all(fd, &msg2, sizeof(RequestMsgH));
-        write_all(fd, &msg3, sizeof(RequestMsgH));
+    // MERGE message
+    RequestMsg msg;
+    while (split_program(&program, &msg)) {
+        write_all(fd, &msg, sizeof(RequestMsgH) + msg_size(&msg) * sizeof(Instruction));
     }
 
-    // Read ResultMsg
-    ResultMsg res = {0};
-    for (size_t i = 0; i < requests; i++) {
-        read_all(fd, &res, sizeof(ResultMsg));
-        // printf("Result1: %d\n", res.ret);
-        read_all(fd, &res, sizeof(ResultMsg));
-        printf("msg %d: %d\n", res.id, res.ret);
-        read_all(fd, &res, sizeof(ResultMsg));
-        // printf("Result3: %d\n", res.ret);
-    }
+    // Results
+    ResultMsg res;
+    read_all(fd, &res, sizeof(ResultMsg));
+    printf("msg %d: %d\n", res.id, res.ret);
 
     close(fd);
 

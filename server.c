@@ -50,7 +50,7 @@ static bool handle_merge(int connfd, Program *program, RequestMsgH header)
         return false;
     }
 
-    rv = msg_merge_program(&msg, program);
+    rv = merge_program(&msg, program);
     ResultMsg res = { MERGE, header.id, rv ? 0 : 1 };
 
     rv = write_all(connfd, &res, sizeof(res));
