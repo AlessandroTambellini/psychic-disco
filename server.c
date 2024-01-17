@@ -62,13 +62,11 @@ static bool handle_merge(int connfd, Program *program, RequestMsgH header)
     return true;
 }
 
-static bool handle_exec(int connfd, Program *program, RequestMsgH header)
+static bool handle_exec(int connfd, Program *program, Vm *vm, RequestMsgH header)
 {
-    Vm vm = {0};
-    vm_init(&vm, program);
-    loop(&vm);
+    loop(vm);
 
-    ResultMsg res = { EXEC, header.id, vm.data[0]};
+    ResultMsg res = { EXEC, header.id, vm->data[0]};
     bool rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
         printf("[ERROR]: Failed write()\n");
@@ -95,7 +93,7 @@ static bool handle_reset(int connfd, Program *program, RequestMsgH header)
     return true;
 }
 
-static bool handle_connection(int connfd, Program *program)
+static bool handle_connection(int connfd, Program *program, Vm *vm)
 {
     RequestMsgH header = {0};
 
@@ -111,7 +109,7 @@ static bool handle_connection(int connfd, Program *program)
             break;
         case EXEC:
             printf("[INFO]: Executing program of size %zu.\n", program_size(program));
-            handle_exec(connfd, program, header);
+            handle_exec(connfd, program, vm, header);
             break;
         case RESET:
             printf("[INFO]: Clearing %zu instructions.\n", program_size(program));
@@ -146,6 +144,9 @@ int main()
     Program program;
     program_init(&program);
 
+    Vm vm;
+    vm_init(&vm, &program);
+
     printf("[INFO]: Listening on port 8080...\n");
     while (1) {
         struct sockaddr_in client_addr = {0};
@@ -155,7 +156,7 @@ int main()
             continue;
         }
 
-        while (handle_connection(connfd, &program));
+        while (handle_connection(connfd, &program, &vm));
 
         close(connfd);
     }
