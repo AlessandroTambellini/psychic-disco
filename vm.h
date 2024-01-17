@@ -23,7 +23,7 @@ static const char *res_names[] = {
 #undef RES_STRING
 
 typedef struct {
-    Program program;
+    Program *program;
     int pc;
     int data[DATA_SIZE];
 } Vm;

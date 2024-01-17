@@ -5,7 +5,7 @@
 // Interpreter
 void vm_init(Vm *vm, Program *program)
 {
-    vm->program = *program;
+    vm->program = program;
     vm->pc = 0;
 }
 
@@ -22,7 +22,7 @@ void memory_print(Vm *vm)
 void loop(Vm *vm)
 {
     Instruction *inst;
-    while (vm->pc < program_size(&vm->program)) {
+    while (vm->pc < program_size(vm->program)) {
         // Fetch instruction
         inst = fetch(vm);
 
@@ -43,7 +43,7 @@ void loop(Vm *vm)
 Instruction *fetch(Vm *vm)
 {
     size_t pc = vm->pc;
-    return program_fetch(&vm->program, pc);
+    return program_fetch(vm->program, pc);
 }
 
 // Pointer to interpreter cause we need
@@ -237,7 +237,7 @@ InstResult movi(Vm *vm, int dest, int arg1)
 InstResult beq(Vm *vm, int dest, int arg1, int arg2)
 {
     if (CHECK_DATA_BOUNDS_2(arg1, arg2)
-        && dest < program_size(&vm->program)) {
+        && dest < program_size(vm->program)) {
         if (arg1 == arg2)
             vm->pc = dest;
         else if (vm->data[arg1] == vm->data[arg2])
@@ -252,7 +252,7 @@ InstResult beq(Vm *vm, int dest, int arg1, int arg2)
 InstResult beqi(Vm *vm, int dest, int arg1, int arg2)
 {
     if (CHECK_DATA_BOUNDS(arg1)
-        && dest < program_size(&vm->program)) {
+        && dest < program_size(vm->program)) {
         if (vm->data[arg1] == arg2)
             vm->pc = dest;
 
@@ -265,7 +265,7 @@ InstResult beqi(Vm *vm, int dest, int arg1, int arg2)
 InstResult bne(Vm *vm, int dest, int arg1, int arg2)
 {
     if (CHECK_DATA_BOUNDS_2(arg1, arg2)
-        && dest < program_size(&vm->program)) {
+        && dest < program_size(vm->program)) {
         if (vm->data[arg1] != vm->data[arg2])
             vm->pc = dest;
 
@@ -278,7 +278,7 @@ InstResult bne(Vm *vm, int dest, int arg1, int arg2)
 InstResult bnei(Vm *vm, int dest, int arg1, int arg2)
 {
     if (CHECK_DATA_BOUNDS(arg1)
-        && dest < program_size(&vm->program)) {
+        && dest < program_size(vm->program)) {
         if (vm->data[arg1] != arg2)
             vm->pc = dest;
 
@@ -291,7 +291,7 @@ InstResult bnei(Vm *vm, int dest, int arg1, int arg2)
 InstResult bge(Vm *vm, int dest, int arg1, int arg2)
 {
     if (CHECK_DATA_BOUNDS_2(arg1, arg2)
-        && dest < program_size(&vm->program)) {
+        && dest < program_size(vm->program)) {
         if (vm->data[arg1] >= vm->data[arg2])
             vm->pc = dest;
 
@@ -304,7 +304,7 @@ InstResult bge(Vm *vm, int dest, int arg1, int arg2)
 InstResult bgei(Vm *vm, int dest, int arg1, int arg2)
 {
     if (CHECK_DATA_BOUNDS(arg1)
-        && dest < program_size(&vm->program)) {
+        && dest < program_size(vm->program)) {
         if (vm->data[arg1] >= arg2)
             vm->pc = dest;
 
@@ -332,7 +332,7 @@ InstResult reti(Vm *vm, int dest)
 
 InstResult halt(Vm *vm)
 {
-    vm->pc = program_size(&vm->program);
+    vm->pc = program_size(vm->program);
     return OK;
 }
 
