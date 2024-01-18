@@ -71,21 +71,30 @@ bool program_clear(Program *program)
     return true;
 }
 
-bool program_merge(Program *program1, Program *program2)
+bool program_merge(Program *program, Instruction *src, size_t size)
 {
-    bool rv = program_resize(program1, program1->capacity + program2->capacity);
+    bool rv = program_resize(program, program->capacity + size);
     if (!rv) {
         printf("Failed resize during program merge.\n");
         return false;
     }
 
-    Instruction *dst = program1->v + program1->size;
-    Instruction *src = program2->v;
-    size_t src_size = program2->size * sizeof(Instruction);
+    Instruction *dst = program->v + program->size;
 
-    memcpy(dst, src, src_size);
-    program1->size += program2->size;
+    memcpy(dst, src, size * sizeof(Instruction));
+    program->size += size;
 
+    return true;
+}
+
+bool program_split(Program *program, Instruction *dst, size_t size)
+{
+    memcpy(dst, program->v, size * sizeof(Instruction));
+    size_t size_new = program->size - size;
+    program->size = size_new;
+    if (size_new) {
+        memmove(program->v, program->v + size, size_new * sizeof(Instruction));
+    }
     return true;
 }
 
