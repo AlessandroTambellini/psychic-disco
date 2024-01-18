@@ -3,60 +3,36 @@
 
 #include "program.h"
 
+#define PAYLOAD_SIZE 2 
+
+#define MIN(a, b) a < b ? a : b
+
 typedef enum {
     MERGE,
     EXEC,
     RESET,
-} RequestMsgType;
+    GET,
+} MsgType;
 
 typedef struct {
-    int32_t type; // enum RequestMsgType
+    int32_t type; // enum MsgType
     uint32_t size;
-} RequestMsgH;
-
-// struct RequestMsg
-// +-----------------+
-// |     type(32)    |
-// +-----------------+
-// |     size(32)    |
-// +-----------------+
-// |  v[0].code(32)  |
-// +-----------------+
-// |       ...       |
-// +-----------------+
-// |  v[0].arg2(32)  |
-// +-----------------+
-// |  v[n].code(32)  |
-// +-----------------+
-// |       ...       |
-// +-----------------+
-// |  v[n].arg2(32)  |
-// +-----------------+
-
-// #define PAYLOAD_SIZE 4096
-#define PAYLOAD_SIZE 2 
+} RequestHeader;
 
 typedef struct {
-    RequestMsgH header;
+    RequestHeader header;
     Instruction data[PAYLOAD_SIZE];
-} RequestMsg;
-
-// struct ResultMsg
-// +-----------------+
-// |     type(32)    |
-// +-----------------+
-// |     ret(32)     |
-// +-----------------+
+} Request;
 
 typedef struct {
-    int32_t type; // enum RequestMsgType
+    int32_t type; // enum MsgType
     int32_t ret;
-} ResultMsg;
+    uint32_t size;
+} ResponseHeader;
 
-int32_t msg_type(RequestMsg *msg);
-uint32_t msg_size(RequestMsg *msg);
-Instruction *msg_data(RequestMsg *msg);
-bool merge_program(RequestMsg *msg, Program *program);
-size_t split_program(Program *program, RequestMsg *msg);
+typedef struct {
+    ResponseHeader header;
+    Instruction data[PAYLOAD_SIZE];
+} Response;
 
 #endif

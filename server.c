@@ -9,7 +9,7 @@
 
 static void die(char *s)
 {
-    fprintf(stderr, "%s\n", s);
+    fprintf(stderr, "%s", s);
     exit(1);
 }
 
@@ -39,19 +39,20 @@ static bool write_all(int connfd, void *buf, size_t n)
     return true;
 }
 
-static bool handle_merge(int connfd, Program *program, RequestMsgH header)
+static bool handle_merge(int connfd, Program *program, RequestHeader header)
 {
     bool rv;
-    RequestMsg msg = { header };
+    Request req = { header };
 
-    rv = read_all(connfd, msg_data(&msg), msg_size(&msg) * sizeof(Instruction));
+    rv = read_all(connfd, req.data, req.header.size * sizeof(Instruction));
     if (!rv) {
         printf("[ERROR]: Failed read()\n");
         return false;
     }
 
-    rv = merge_program(&msg, program);
-    ResultMsg res = (ResultMsg) {
+    rv = program_merge(program, req.data, req.header.size);
+
+    ResponseHeader res = (ResponseHeader) {
         .type = MERGE, 
         .ret = rv ? 0 : 1
     };
@@ -65,11 +66,11 @@ static bool handle_merge(int connfd, Program *program, RequestMsgH header)
     return true;
 }
 
-static bool handle_exec(int connfd, Program *program, Vm *vm, RequestMsgH header)
+static bool handle_exec(int connfd, Program *program, Vm *vm, RequestHeader header)
 {
     loop(vm);
 
-    ResultMsg res = (ResultMsg) {
+    ResponseHeader res = (ResponseHeader) {
         .type = EXEC,
         .ret = vm->data[0]
     };
@@ -82,9 +83,9 @@ static bool handle_exec(int connfd, Program *program, Vm *vm, RequestMsgH header
     return true;
 }
 
-static bool handle_reset(int connfd, Program *program, RequestMsgH header)
+static bool handle_reset(int connfd, Program *program, RequestHeader header)
 {
-    ResultMsg res = (ResultMsg) {
+    ResponseHeader res = (ResponseHeader) {
         .type = RESET,
         .ret = program_clear(program) ? 0 : 1
     };
@@ -98,9 +99,39 @@ static bool handle_reset(int connfd, Program *program, RequestMsgH header)
     return true;
 }
 
+static bool handle_get(int connfd, Program *program, RequestHeader header)
+{
+    Program copy;
+    program_init(&copy);
+    program_copy(&copy, program);
+
+    Response res;
+    size_t size;
+    do {
+        size = MIN(program_size(&copy), PAYLOAD_SIZE);
+        program_split(&copy, res.data, size);
+        res.header = (ResponseHeader) {
+            .type = GET,
+            .size = size,
+            .ret = size
+        };
+
+        size_t res_size = sizeof(ResponseHeader) + size * sizeof(Instruction);
+        bool rv = write_all(connfd, &res, res_size);
+        if (!rv) {
+            printf("[ERROR]: Failed write()\n");
+            return false;
+        }
+    } while (size);
+
+    program_deinit(&copy);
+
+    return true;
+}
+
 static bool handle_connection(int connfd, Program *program, Vm *vm)
 {
-    RequestMsgH header = {0};
+    RequestHeader header = {0};
 
     bool rv = read_all(connfd, &header, sizeof(header));
     if (!rv) {
@@ -119,6 +150,10 @@ static bool handle_connection(int connfd, Program *program, Vm *vm)
         case RESET:
             printf("[INFO]: Clearing %zu instructions.\n", program_size(program));
             handle_reset(connfd, program, header);
+            break;
+        case GET:
+            printf("[INFO]: Sending %zu instructions.\n", program_size(program));
+            handle_get(connfd, program, header);
             break;
         default:
             printf("[ERROR]: Method of type %d unknown.\n", header.type);

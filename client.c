@@ -9,7 +9,7 @@
 
 static void die(char *s)
 {
-    fprintf(stderr, "%s\n", s);
+    fprintf(stderr, "%s", s);
     exit(1);
 }
 
@@ -78,30 +78,66 @@ int main()
 
     // MERGE message
     size_t count = 0;
-    RequestMsg msg;
-    ResultMsg res;
+    Request req;
+    Response res;
 
-    while (split_program(&program, &msg)) {
-        write_all(fd, &msg, sizeof(RequestMsgH) + msg_size(&msg) * sizeof(Instruction));
+    while (program_size(&program)) {
+        size_t size = MIN(program_size(&program), PAYLOAD_SIZE);
+        program_split(&program, req.data, size);
+        req.header = (RequestHeader) {
+            .type = MERGE,
+            .size = size,
+        };
+
+        size_t req_size = sizeof(RequestHeader) + req.header.size * sizeof(Instruction);
+        write_all(fd, &req, req_size);
         count++;
     }
 
+    program_deinit(&program);
+
     // Results
     for (size_t i = 0; i < count; i++) {
-        read_all(fd, &res, sizeof(ResultMsg));
+        read_all(fd, &res, sizeof(ResponseHeader));
     }
 
+    // GET message
+    req.header = (RequestHeader) {
+        .type = GET
+    };
+    write_all(fd, &req, sizeof(RequestHeader));
+
+    // Results
+    Program tmp;
+    program_init(&tmp);
+    do {
+        read_all(fd, &res, sizeof(ResponseHeader));
+        read_all(fd, &res.data, res.header.size * sizeof(Instruction));
+        program_merge(&tmp, res.data, res.header.size);
+    } while (res.header.size);
+    program_print(&tmp);
+    program_deinit(&tmp);
+
     // EXEC message
-    msg = (RequestMsg) {{EXEC}};
-    write_all(fd, &msg, sizeof(RequestMsgH));
+    req.header = (RequestHeader) {
+        .type = EXEC
+    };
+    write_all(fd, &req, sizeof(RequestHeader));
 
     // Result
-    read_all(fd, &res, sizeof(ResultMsg));
-    printf("msg: %d\n", res.ret);
+    read_all(fd, &res, sizeof(ResponseHeader));
+    printf("msg: %d\n", res.header.ret);
 
     // RESET message
-    msg = (RequestMsg) {{RESET}};
-    write_all(fd, &msg, sizeof(RequestMsgH));
+    req = (Request) {
+        .header = {
+            .type = RESET
+        }
+    };
+    write_all(fd, &req, sizeof(RequestHeader));
+
+    // Response
+    read_all(fd, &res, sizeof(ResponseHeader));
 
     close(fd);
 

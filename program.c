@@ -147,6 +147,6 @@ void program_print(Program *program)
 
 void inst_print(Instruction inst, size_t index)
 {
-    printf("[%zu]:\t%i %i %i %i\n", index, inst.code,
+    printf("[0x%.4zx]: %i %i %i %i\n", index, inst.code,
         inst.dest, inst.arg1, inst.arg2);
 }
