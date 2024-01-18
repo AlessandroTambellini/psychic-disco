@@ -8,11 +8,6 @@ uint32_t msg_size(RequestMsg *msg)
     return msg->header.size;
 }
 
-uint32_t msg_id(RequestMsg *msg)
-{
-    return msg->header.id;
-}
-
 Instruction *msg_data(RequestMsg *msg)
 {
     return msg->data;
@@ -34,8 +29,7 @@ size_t split_program(Program *program, RequestMsg *msg)
 
         msg->header = (RequestMsgH) {
             .type = MERGE,
-                .size = size,
-                .id = 0
+            .size = size,
         };
     }
 

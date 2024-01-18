@@ -51,7 +51,10 @@ static bool handle_merge(int connfd, Program *program, RequestMsgH header)
     }
 
     rv = merge_program(&msg, program);
-    ResultMsg res = { MERGE, header.id, rv ? 0 : 1 };
+    ResultMsg res = (ResultMsg) {
+        .type = MERGE, 
+        .ret = rv ? 0 : 1
+    };
 
     rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
@@ -66,7 +69,10 @@ static bool handle_exec(int connfd, Program *program, Vm *vm, RequestMsgH header
 {
     loop(vm);
 
-    ResultMsg res = { EXEC, header.id, vm->data[0]};
+    ResultMsg res = (ResultMsg) {
+        .type = EXEC,
+        .ret = vm->data[0]
+    };
     bool rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
         printf("[ERROR]: Failed write()\n");
@@ -78,10 +84,9 @@ static bool handle_exec(int connfd, Program *program, Vm *vm, RequestMsgH header
 
 static bool handle_reset(int connfd, Program *program, RequestMsgH header)
 {
-    ResultMsg res = {
-        RESET,
-        header.id,
-        program_clear(program) ? 0 : 1
+    ResultMsg res = (ResultMsg) {
+        .type = RESET,
+        .ret = program_clear(program) ? 0 : 1
     };
 
     bool rv = write_all(connfd, &res, sizeof(res));

@@ -71,6 +71,22 @@ bool program_clear(Program *program)
     return true;
 }
 
+bool program_copy(Program *program, Program *src)
+{
+    bool rv = program_resize(program, src->capacity);
+    if (!rv) {
+        printf("Failed resize during program copy.\n");
+        return false;
+    }
+
+    memcpy(program->v, src->v, src->size * sizeof(Instruction));
+
+    program->size = src->size;
+    program->capacity = src->capacity;
+
+    return true;
+}
+
 bool program_merge(Program *program, Instruction *src, size_t size)
 {
     bool rv = program_resize(program, program->capacity + size);

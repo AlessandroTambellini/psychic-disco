@@ -97,7 +97,7 @@ int main()
 
     // Result
     read_all(fd, &res, sizeof(ResultMsg));
-    printf("msg %d: %d\n", res.id, res.ret);
+    printf("msg: %d\n", res.ret);
 
     // RESET message
     msg = (RequestMsg) {{RESET}};
