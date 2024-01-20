@@ -96,7 +96,7 @@ int main()
 
     program_deinit(&program);
 
-    // Results
+    // Responses
     for (size_t i = 0; i < count; i++) {
         read_all(fd, &res, sizeof(ResponseHeader));
     }
@@ -107,7 +107,7 @@ int main()
     };
     write_all(fd, &req, sizeof(RequestHeader));
 
-    // Results
+    // Responses
     Program tmp;
     program_init(&tmp);
     do {
@@ -124,7 +124,7 @@ int main()
     };
     write_all(fd, &req, sizeof(RequestHeader));
 
-    // Result
+    // Response
     read_all(fd, &res, sizeof(ResponseHeader));
     printf("msg: %d\n", res.header.ret);
 

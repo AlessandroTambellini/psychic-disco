@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "program.h"
 
@@ -111,6 +112,34 @@ bool program_split(Program *program, Instruction *dst, size_t size)
     if (size_new) {
         memmove(program->v, program->v + size, size_new * sizeof(Instruction));
     }
+    return true;
+}
+
+bool program_delete(Program *program, size_t start, size_t end)
+{
+    if (start > end) {
+        printf("Start must be greater than end.\n");
+        return false;
+    }
+
+    if (start < 0) {
+        printf("Start must be positive.\n");
+        return false;
+    }
+
+    if (end > program->size) {
+        printf("End must be less than program size.\n");
+        return false;
+    }
+
+    // Include end
+    end++;
+
+    size_t size = end - start;
+    memmove(program->v + start, program->v + end, size * sizeof(Instruction));
+
+    program->size -= size;
+
     return true;
 }
 

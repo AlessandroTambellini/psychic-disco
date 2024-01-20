@@ -74,6 +74,7 @@ static bool handle_exec(int connfd, Program *program, Vm *vm, RequestHeader head
         .type = EXEC,
         .ret = vm->data[0]
     };
+
     bool rv = write_all(connfd, &res, sizeof(res));
     if (!rv) {
         printf("[ERROR]: Failed write()\n");

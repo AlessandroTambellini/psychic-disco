@@ -53,6 +53,7 @@ bool program_clear(Program *program);
 bool program_copy(Program *program, Program *src);
 bool program_merge(Program *program, Instruction *src, size_t size);
 bool program_split(Program *program, Instruction *dst, size_t size);
+bool program_delete(Program *program, size_t start, size_t end);
 bool program_add(Program *program, Instruction inst);
 void program_print(Program *program);
 void inst_print(Instruction inst, size_t index);
