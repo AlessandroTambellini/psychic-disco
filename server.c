@@ -130,6 +130,26 @@ static bool handle_get(int connfd, Program *program, RequestHeader header)
     return true;
 }
 
+static bool handle_delete(int connfd, Program *program, RequestHeader header)
+{
+    bool rv;
+    rv = program_delete(program, header.start, header.size);
+
+    ResponseHeader res = (ResponseHeader) {
+        .type = DELETE,
+        .ret = rv ? 0 : 1,
+        .size = program_size(program)
+    };
+
+    rv = write_all(connfd, &res, sizeof(res));
+    if (!rv) {
+        printf("[ERROR]: Failed write()\n");
+        return false;
+    }
+
+    return true;
+}
+
 static bool handle_connection(int connfd, Program *program, Vm *vm)
 {
     RequestHeader header = {0};
@@ -155,6 +175,10 @@ static bool handle_connection(int connfd, Program *program, Vm *vm)
         case GET:
             printf("[INFO]: Sending %zu instructions.\n", program_size(program));
             handle_get(connfd, program, header);
+            break;
+        case DELETE:
+            printf("[INFO]: Deleting %u instructions.\n", header.size);
+            handle_delete(connfd, program, header);
             break;
         default:
             printf("[ERROR]: Method of type %d unknown.\n", header.type);

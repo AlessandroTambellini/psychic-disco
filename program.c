@@ -115,28 +115,26 @@ bool program_split(Program *program, Instruction *dst, size_t size)
     return true;
 }
 
-bool program_delete(Program *program, size_t start, size_t end)
+bool program_delete(Program *program, size_t start, size_t size)
 {
-    if (start > end) {
-        printf("Start must be greater than end.\n");
+    if (size < 0) {
+        printf("Size must be greater than zero.\n");
         return false;
     }
 
     if (start < 0) {
-        printf("Start must be positive.\n");
+        printf("Start must be greater than zero.\n");
         return false;
     }
 
-    if (end > program->size) {
-        printf("End must be less than program size.\n");
+    size_t len = program->size - start - size;
+
+    if (len < 0) {
+        printf("Interval is outside program bounds.\n");
         return false;
     }
 
-    // Include end
-    end++;
-
-    size_t size = end - start;
-    memmove(program->v + start, program->v + end, size * sizeof(Instruction));
+    memmove(program->v + start, program->v + start + size, len * sizeof(Instruction));
 
     program->size -= size;
 

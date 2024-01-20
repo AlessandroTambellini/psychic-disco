@@ -12,11 +12,13 @@ typedef enum {
     EXEC,
     RESET,
     GET,
+    DELETE,
 } MsgType;
 
 typedef struct {
     int32_t type; // enum MsgType
     uint32_t size;
+    uint32_t start;
 } RequestHeader;
 
 typedef struct {
