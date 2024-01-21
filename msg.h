@@ -5,8 +5,6 @@
 
 #define PAYLOAD_SIZE 2
 
-#define MIN(a, b) a < b ? a : b
-
 typedef enum {
     MERGE,
     EXEC,

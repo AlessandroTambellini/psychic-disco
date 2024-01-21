@@ -6,38 +6,7 @@
 #include "program.h"
 #include "vm.h"
 #include "msg.h"
-
-static void die(char *s)
-{
-    fprintf(stderr, "%s", s);
-    exit(1);
-}
-
-static bool read_all(int connfd, void *buf, size_t n)
-{
-    while (n > 0) {
-        ssize_t rv = read(connfd, buf, n);
-        if (rv <= 0) {
-            return false;
-        }
-        n -= rv;
-        buf += rv;
-    }
-    return true;
-}
-
-static bool write_all(int connfd, void *buf, size_t n)
-{
-    while (n > 0) {
-        ssize_t rv = write(connfd, buf, n);
-        if (rv <= 0) {
-            return false;
-        }
-        n -= rv;
-        buf += rv;
-    }
-    return true;
-}
+#include "common.h"
 
 static bool handle_merge(int connfd, Program *program, RequestHeader header)
 {

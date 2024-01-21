@@ -6,38 +6,7 @@
 
 #include "program.h"
 #include "msg.h"
-
-static void die(char *s)
-{
-    fprintf(stderr, "%s", s);
-    exit(1);
-}
-
-static bool read_all(int fd, void *buf, size_t n)
-{
-    while (n > 0) {
-        ssize_t rv = read(fd, buf, n);
-        if (rv <= 0) {
-            return false;
-        }
-        n -= rv;
-        buf += rv;
-    }
-    return true;
-}
-
-static bool write_all(int fd, void *buf, size_t n)
-{
-    while (n > 0) {
-        ssize_t rv = write(fd, buf, n);
-        if (rv <= 0) {
-            return false;
-        }
-        n -= rv;
-        buf += rv;
-    }
-    return true;
-}
+#include "common.h"
 
 int main()
 {
