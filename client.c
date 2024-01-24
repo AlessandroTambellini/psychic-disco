@@ -18,8 +18,8 @@ int main()
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
     addr.sin_port = ntohs(8080);
-    // addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     addr.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);
+    // addr.sin_addr.s_addr = inet_addr("192.168.1.202");
     int rv = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
     if (rv < 0) {
         die("Failed connect()\n");

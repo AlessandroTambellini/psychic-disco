@@ -35,10 +35,8 @@
 *.i*86
 *.x86_64
 *.hex
-psychic-disco
 server
-client
-test
+pd-client
 
 # Debug files
 *.dSYM/
