@@ -50,60 +50,74 @@ int main()
 
     Request req;
     Response res;
-    // // MERGE message
-    // size_t count = 0;
 
-    // while (program_size(&program)) {
-    //     size_t size = MIN(program_size(&program), PAYLOAD_SIZE);
-    //     program_split(&program, req.data, size);
-    //     req.header = (RequestHeader) {
-    //         .type = MERGE,
-    //         .size = size,
-    //     };
+    // MERGE message
+    size_t count = 0;
 
-    //     size_t req_size = sizeof(req.header) + req.header.size * sizeof(Instruction);
-    //     write_all(fd, &req, req_size);
-    //     count++;
-    //     return 0;
-    // }
+    while (program_size(&program)) {
+        size_t n = MIN(program_size(&program),
+                PAYLOAD_SIZE/sizeof(Instruction)); // MIN(9, 16);
 
-    // program_deinit(&program);
+        size_t size = n * sizeof(Instruction);
 
-    // // Responses
-    // for (size_t i = 0; i < count; i++) {
-    //     read_all(fd, &res, sizeof(res.header));
-    // }
+        program_split(&program, (Instruction *)req.payload, n);
+        req.header = (RequestHeader) {
+            .type = MERGE,
+                .size = size
+        };
+        size_t req_size = sizeof(req.header) + req.header.size;
+        write_all(fd, &req, req_size);
+        count++;
+    }
 
-    // DELETE message
-    req.header = (RequestHeader) {
-        .type = DELETE,
-        .size = 4
-    };
-    int a = 123;
-    memcpy(&req.payload, &a, 4);
-    write_all(fd, &req, sizeof(RequestHeader) + 4);
+    program_deinit(&program);
 
     // Responses
-    read_all(fd, &res, sizeof(res.header));
-    read_all(fd, &res.payload, res.header.size);
-    printf("read %lu\n", sizeof(res.header) + res.header.size);
-    printf("status %d\n", res.header.status);
-    printf("size %d\n", res.header.size);
-    printf("payload %d\n", ((int *)res.payload)[0]);
+    for (size_t i = 0; i < count; i++) {
+        read_all(fd, &res.header, sizeof(res.header));
+        read_all(fd, res.payload, res.header.size);
+    }
 
-    // // GET message
-    // req.header = (RequestHeader) {
-    //     .type = GET
-    // };
-    // write_all(fd, &req, sizeof(req.header));
+    // DELETE message
+    uint32_t v1[2] = {1, 2};
+    req.header = (RequestHeader) {
+        .type = DELETE,
+        .size = sizeof(v1)
+    };
+    memcpy(req.payload, v1, req.header.size);
+    write_all(fd, &req, sizeof(req.header) + req.header.size);
+
+    // Responses
+    read_all(fd, &res.header, sizeof(res.header));
+    read_all(fd, res.payload, res.header.size);
+
+    // GET message
+    req.header = (RequestHeader) {
+        .type = GET,
+        .size = 0
+    };
+
+    Program tmp;
+    program_init(&tmp);
+
+    write_all(fd, &req, sizeof(req.header));
+    read_all(fd, &res, sizeof(res.header));
+    read_all(fd, res.payload, res.header.size);
+    program_merge(&tmp, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
+
+    write_all(fd, &req, sizeof(req.header));
+    read_all(fd, &res, sizeof(res.header));
+    read_all(fd, res.payload, res.header.size);
+    program_merge(&tmp, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
+    program_print(&tmp);
 
     // // Responses
     // Program tmp;
     // program_init(&tmp);
     // do {
     //     read_all(fd, &res, sizeof(res.header));
-    //     read_all(fd, &res.data, res.header.size * sizeof(Instruction));
-    //     program_merge(&tmp, res.data, res.header.size);
+    //     read_all(fd, res.payload, res.header.size);
+    //     program_merge(&tmp, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
     // } while (res.header.size);
     // program_print(&tmp);
     // program_deinit(&tmp);

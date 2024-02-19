@@ -8,7 +8,9 @@
 
 #include "el.h"
 
-#define PAYLOAD_SIZE 256
+// PAYLOAD_SIZE should be a value greater than sizeof(Instruction)
+// defined in program.h which, as of now, is 16 bytes
+#define PAYLOAD_SIZE 2 * 16
 
 typedef enum {
     MERGE,

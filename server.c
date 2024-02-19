@@ -51,6 +51,7 @@ bool handle_request(Conn *conn)
         if (bytes == 0) {
             if (conn->rbuf_size > 0) {
                 printf("Unexpected EOF\n");
+                exit(1);
                 return false;
             } else {
                 printf("EOF\n");
@@ -61,70 +62,130 @@ bool handle_request(Conn *conn)
 
         conn->rbuf_size += (size_t)bytes;
 
-        // Check if the header is ready to be read
-        if (conn->rbuf_size < sizeof(RequestHeader)) {
-            break;
+        // Use this for pipelining, allow for multiple
+        // requests to be store inside rbuf simultaneously
+        while (conn->rbuf_size) {
+            // Check if the header is ready to be read
+            if (conn->rbuf_size < sizeof(RequestHeader)) {
+                break;
+            }
+
+            // Read header
+            RequestHeader header;
+            memcpy(&header, conn->rbuf, sizeof(header));
+
+            // Check if the payload is ready to be read
+            if (conn->rbuf_size - sizeof(header) < header.size) {
+                break;
+            }
+
+            // Read payload
+            Request req = { header };
+            memcpy(req.payload, conn->rbuf + sizeof(header), header.size);
+            // printf("payload %d\n", ((int *)req.payload)[0]);
+            // printf("payload %d\n", ((int *)req.payload)[1]);
+
+            Response res = {0};
+            switch (req.header.type) {
+                case MERGE:
+                    handle_merge(conn, &req, &res);
+                    break;
+                case EXEC:
+                    handle_exec(conn, &req, &res);
+                    break;
+                case RESET:
+                    break;
+                case GET:
+                    handle_get(conn, &req, &res);
+                    break;
+                case DELETE:
+                    handle_delete(conn, &req, &res);
+                    break;
+                default:
+                    break;
+            }
+
+            // Copy response to wbuf
+            size_t res_size = sizeof(res.header) + res.header.size;
+            memcpy(conn->wbuf, &res, res_size);
+            conn->wbuf_size = res_size;
+
+            // Clear rbuf
+            size_t req_size = sizeof(req.header) + req.header.size;
+            size_t remain = conn->rbuf_size - req_size;
+            if (remain) {
+                memmove(conn->rbuf, conn->rbuf + req_size, remain);
+            }
+            conn->rbuf_size = remain;
+
+            conn->state = CONN_RES;
+
+            // If I remove this pipelining doesn't work
+            handle_response(conn);
         }
-
-        // Read header
-        RequestHeader header;
-        memcpy(&header, conn->rbuf, sizeof(RequestHeader));
-        // printf("type %d\n", header.type);
-        // printf("size %d\n", header.size);
-
-        // Check if the payload is ready to be read
-        if (conn->rbuf_size - sizeof(RequestHeader) < header.size) {
-            break;
-        }
-
-        // Read payload
-        Request req = { header };
-        memcpy(&req.payload, conn->rbuf + sizeof(header), header.size);
-        // printf("payload %d\n", ((int *)req.payload)[0]);
-
-        Response res = {0};
-        switch (req.header.type) {
-            case MERGE:
-                break;
-            case EXEC:
-                break;
-            case RESET:
-                break;
-            case GET:
-                break;
-            case DELETE:
-                handle_delete(conn, &req, &res);
-                break;
-            default:
-                break;
-        }
-
-        // Copy response to wbuf
-        size_t res_size = sizeof(ResponseHeader) + res.header.size;
-        memcpy(conn->wbuf, &res, res_size);
-        conn->wbuf_size = res_size;
-
-        // Clear rbuf
-        size_t req_size = sizeof(RequestHeader) + req.header.size;
-        size_t remain = conn->rbuf_size - req_size;
-        if (remain) {
-            memmove(conn->rbuf, conn->rbuf + req_size, remain);
-        }
-        conn->rbuf_size = remain;
-
-        conn->state = CONN_RES;
     }
 
     return true;
 }
 
+bool handle_merge(Conn *conn, Request *req, Response *res)
+{
+    size_t bytes = req->header.size;
+    size_t n = bytes / sizeof(Instruction);
+
+    Program *program = conn->vm->program;
+    bool rv = program_merge(program, (Instruction *)req->payload, n);
+    if (!rv) {
+        printf("Failed merge\n");
+        res->header.status = 1;
+        res->header.size = 0;
+        return false;
+    }
+
+    return true;
+}
+
+bool handle_exec(Conn *conn, Request *req, Response *res)
+{
+    loop(conn->vm);
+    size_t size = MIN(DATA_SIZE, PAYLOAD_SIZE);
+    res->header.status = 0;
+    res->header.size = size;
+    memcpy(res->payload, conn->vm->data, size);
+    return true;
+}
+
+bool handle_get(Conn *conn, Request *req, Response *res)
+{
+    size_t start = ((int *)req->payload)[0];
+    size_t size = ((int *)req->payload)[1];
+
+    if (size > PAYLOAD_SIZE) {
+        res->header.status = 1;
+        res->header.size = 0;
+        return false;
+    }
+
+    // TODO: Finish this part
+    // Program *program = conn->vm->program;
+    // program_get()
+    return true;
+}
+
 bool handle_delete(Conn *conn, Request *req, Response *res)
 {
-    // Delete
-    res->header.status = 123;
-    res->header.size = 4;
-    int a = 456;
-    memcpy(res->payload, &a, 4);
+    uint32_t values[2];
+    memcpy(values, req->payload, 8);
+    Program *program = conn->vm->program;
+    bool rv = program_delete(program, values[0], values[1]);
+    if (!rv) {
+        res->header.status = 1;
+        res->header.size = 0;
+        return false;
+    }
+
+    res->header.status = 0;
+    res->header.size = 0;
     return true;
 }
 
@@ -134,7 +195,7 @@ bool handle_response(Conn *conn)
         size_t bytes = 0;
         do {
             size_t n = conn->wbuf_size - conn->wbuf_sent;
-            bytes = write(conn->fd, conn->wbuf, n);
+            bytes = write(conn->fd, conn->wbuf + conn->wbuf_sent, n);
         } while (bytes < 0 && errno == EINTR);
 
         if (bytes < 0) {
@@ -154,6 +215,8 @@ bool handle_response(Conn *conn)
             conn->wbuf_sent = 0;
         }
     }
+
+    return true;
 }
 
 int main()
@@ -230,7 +293,6 @@ int main()
                 printf("Failed to accept new connection.\n");
                 return -1;
             }
-            // printf("Accepting fd %d.\n", connfd);
 
             set_nonblocking(connfd);
 

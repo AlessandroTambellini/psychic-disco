@@ -117,27 +117,28 @@ bool program_split(Program *program, Instruction *dst, size_t size)
 
 bool program_delete(Program *program, size_t start, size_t size)
 {
-    if (size < 0) {
-        printf("Size must be greater than zero.\n");
-        return false;
-    }
-
-    if (start < 0) {
-        printf("Start must be greater than zero.\n");
-        return false;
-    }
-
-    size_t len = program->size - start - size;
-
-    if (len < 0) {
+    if (start + size >= program->size) {
         printf("Interval is outside program bounds.\n");
         return false;
     }
 
-    memmove(program->v + start, program->v + start + size, len * sizeof(Instruction));
+    size_t remain = program->size - start - size;
+
+    memmove(program->v + start, program->v + start + size, remain * sizeof(Instruction));
 
     program->size -= size;
 
+    return true;
+}
+
+bool program_get(Program *program, Instruction *dst, size_t start, size_t size)
+{
+    if (start + size >= program->size) {
+        printf("Interval is outside program bounds.\n");
+        return false;
+    }
+
+    memcpy(dst, program->v + start, size * sizeof(Instruction));
     return true;
 }
 

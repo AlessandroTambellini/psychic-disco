@@ -30,7 +30,7 @@ bool write_all(int fd, void *buf, size_t n)
 {
     while (n > 0) {
         ssize_t rv = write(fd, buf, n);
-        printf("written %zu\n", rv);
+        // printf("written %zu\n", rv);
         if (rv <= 0) {
             return false;
         }

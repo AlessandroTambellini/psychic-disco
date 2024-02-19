@@ -36,7 +36,8 @@
 *.x86_64
 *.hex
 server
-pd-client
+client
+test
 
 # Debug files
 *.dSYM/
