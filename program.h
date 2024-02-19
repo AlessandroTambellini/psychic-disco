@@ -30,10 +30,10 @@ typedef enum {
 } OpCode;
 
 typedef struct {
-    int code; // enum OpCode
-    int dest;
-    int arg1;
-    int arg2;
+    uint32_t code; // enum OpCode
+    uint32_t dest;
+    uint32_t arg1;
+    uint32_t arg2;
 } Instruction;
 
 typedef struct {

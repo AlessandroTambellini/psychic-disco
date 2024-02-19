@@ -2,21 +2,21 @@ CC=gcc
 CFLAGS=-Wall
 INSTALL_PATH=/usr/bin
 
-all: pd-server client
+all: server client
 
-pd-server: server.o program.o vm.o
-	$(CC) $(CFLAGS) -o pd-server server.o program.o vm.o
+server: server.o program.o vm.o el.o
+	$(CC) $(CFLAGS) -o server server.o program.o vm.o el.o
 
 client: client.o program.o
 	$(CC) $(CFLAGS) -o client client.o program.o
 
 clean:
-	rm -f pd-server client *.o
+	rm -f server client *.o
 
-install: pd-server
+install: server
 	echo Installing executable to ${INSTALL_PATH}
-	mv pd-server ${INSTALL_PATH}/pd-server
+	mv server ${INSTALL_PATH}/server
 
 uninstall:
 	echo Removing executable from ${INSTALL_PATH}
-	rm ${INSTALL_PATH}/pd-server
+	rm ${INSTALL_PATH}/server
