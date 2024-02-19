@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <poll.h>
 
+#include "vm.h"
+
 typedef enum {
     CONN_REQ,
     CONN_RES,
@@ -21,6 +23,7 @@ typedef struct {
     uint8_t wbuf[BUF_SIZE];
     size_t wbuf_sent;
     size_t wbuf_size;
+    Vm *vm;
 } Conn;
 
 // EventLoop is used as a map from fd to Conn

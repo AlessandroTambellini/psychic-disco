@@ -29,7 +29,8 @@ typedef struct {
 } Vm;
 
 // Interpreter
-void vm_init(Vm *vm, Program *program);
+void vm_init(Vm *vm);
+void vm_deinit(Vm *vm);
 
 // Memory
 void memory_print(Vm *vm);

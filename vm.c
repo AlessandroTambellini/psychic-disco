@@ -1,12 +1,22 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "vm.h"
 #include "program.h"
-#include <stdio.h>
 
 // Interpreter
-void vm_init(Vm *vm, Program *program)
+void vm_init(Vm *vm)
 {
+    Program *program = (Program *)malloc(sizeof(Program));
+    program_init(program);
     vm->program = program;
     vm->pc = 0;
+}
+
+void vm_deinit(Vm *vm)
+{
+    program_deinit(vm->program);
+    free(vm->program);
 }
 
 // Memory

@@ -44,6 +44,7 @@ typedef struct {
 
 bool program_init(Program *program);
 bool program_deinit(Program *program);
+bool program_deinit(Program *program);
 Instruction *program_data(Program *program);
 size_t program_capacity(Program *program);
 size_t program_size(Program *program);

@@ -46,11 +46,16 @@ bool el_add(EventLoop *el, int fd)
         printf("Failed allocation.\n");
         return false;
     }
+
     conn->fd = fd;
     conn->state = CONN_REQ;
     conn->rbuf_size = 0;
     conn->wbuf_size = 0;
     conn->wbuf_sent = 0;
+
+    Vm *vm = (Vm *)malloc(sizeof(Vm));
+    vm_init(vm);
+    conn->vm = vm;
 
     el->conn[fd] = conn;
 
@@ -60,7 +65,8 @@ bool el_add(EventLoop *el, int fd)
 bool el_remove(EventLoop *el, int fd)
 {
     close(fd);
-    free(el->conn[fd]);
+    vm_deinit(el->conn[fd]->vm);
+    free(el->conn[fd]->vm);
     el->conn[fd] = NULL;
     return true;
 }
