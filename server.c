@@ -94,6 +94,7 @@ bool handle_request(Conn *conn)
                     handle_exec(conn, &req, &res);
                     break;
                 case RESET:
+                    handle_reset(conn, &req, &res);
                     break;
                 case GET:
                     handle_get(conn, &req, &res);
@@ -142,6 +143,8 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
         return false;
     }
 
+    res->header.status = 0;
+    res->header.size = 0;
     return true;
 }
 
@@ -155,29 +158,46 @@ bool handle_exec(Conn *conn, Request *req, Response *res)
     return true;
 }
 
-bool handle_get(Conn *conn, Request *req, Response *res)
+bool handle_reset(Conn *conn, Request *req, Response *res)
 {
-    size_t start = ((int *)req->payload)[0];
-    size_t size = ((int *)req->payload)[1];
-
-    if (size > PAYLOAD_SIZE) {
+    Program *program = conn->vm->program;
+    bool rv = program_clear(program);
+    if (!rv) {
         res->header.status = 1;
         res->header.size = 0;
         return false;
     }
 
-    // TODO: Finish this part
-    // Program *program = conn->vm->program;
-    // program_get()
+    res->header.status = 69;
+    res->header.size = 69;
+    return true;
+}
+
+bool handle_get(Conn *conn, Request *req, Response *res)
+{
+    size_t start = ((uint32_t *)req->payload)[0];
+    size_t size = ((uint32_t *)req->payload)[1];
+    size = MIN(size, PAYLOAD_SIZE / sizeof(Instruction));
+
+    Program *program = conn->vm->program;
+    bool rv = program_get(program, (Instruction *)res->payload, start, size);
+    if (!rv) {
+        res->header.status = 1;
+        res->header.size = 0;
+        return false;
+    }
+
+    res->header.status = 0;
+    res->header.size = size * sizeof(Instruction);
     return true;
 }
 
 bool handle_delete(Conn *conn, Request *req, Response *res)
 {
-    uint32_t values[2];
-    memcpy(values, req->payload, 8);
+    size_t start = ((uint32_t *)req->payload)[0];
+    size_t size = ((uint32_t *)req->payload)[1];
     Program *program = conn->vm->program;
-    bool rv = program_delete(program, values[0], values[1]);
+    bool rv = program_delete(program, start, size);
     if (!rv) {
         res->header.status = 1;
         res->header.size = 0;

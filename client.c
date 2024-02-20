@@ -79,69 +79,57 @@ int main()
     }
 
     // DELETE message
-    uint32_t v1[2] = {1, 2};
     req.header = (RequestHeader) {
         .type = DELETE,
-        .size = sizeof(v1)
+        .size = 2 * 4
     };
-    memcpy(req.payload, v1, req.header.size);
+    ((uint32_t *)req.payload)[0] = 1;
+    ((uint32_t *)req.payload)[1] = 2;
     write_all(fd, &req, sizeof(req.header) + req.header.size);
 
-    // Responses
+    // Response
     read_all(fd, &res.header, sizeof(res.header));
     read_all(fd, res.payload, res.header.size);
 
     // GET message
     req.header = (RequestHeader) {
         .type = GET,
-        .size = 0
+        .size = 2 * 4
     };
+    ((uint32_t *)req.payload)[0] = 0;
+    ((uint32_t *)req.payload)[1] = 4;
+    write_all(fd, &req, sizeof(req.header) + req.header.size);
 
+    // Response
     Program tmp;
     program_init(&tmp);
-
-    write_all(fd, &req, sizeof(req.header));
     read_all(fd, &res, sizeof(res.header));
     read_all(fd, res.payload, res.header.size);
     program_merge(&tmp, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
+    program_deinit(&tmp);
 
+    // EXEC message
+    req.header = (RequestHeader) {
+        .type = EXEC,
+        .size = 0
+    };
     write_all(fd, &req, sizeof(req.header));
+
+    // Response
     read_all(fd, &res, sizeof(res.header));
     read_all(fd, res.payload, res.header.size);
-    program_merge(&tmp, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
-    program_print(&tmp);
+    printf("res: %d\n", res.payload[0]);
 
-    // // Responses
-    // Program tmp;
-    // program_init(&tmp);
-    // do {
-    //     read_all(fd, &res, sizeof(res.header));
-    //     read_all(fd, res.payload, res.header.size);
-    //     program_merge(&tmp, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
-    // } while (res.header.size);
-    // program_print(&tmp);
-    // program_deinit(&tmp);
+    // RESET message
+    req.header = (RequestHeader) {
+        .type = RESET,
+        .size = 0
+    };
+    write_all(fd, &req, sizeof(req.header));
 
-    // // EXEC message
-    // req.header = (RequestHeader) {
-    //     .type = EXEC
-    // };
-    // write_all(fd, &req, sizeof(req.header));
-
-    // // Response
-    // read_all(fd, &res, sizeof(res.header));
-    // printf("msg: %d\n", res.header.ret);
-
-    // // RESET message
-    // req = (Request) {
-    //     .header = {
-    //         .type = RESET
-    //     }
-    // };
-    // write_all(fd, &req, sizeof(req.header));
-
-    // // Response
-    // read_all(fd, &res, sizeof(res.header));
+    // Response
+    read_all(fd, &res, sizeof(res.header));
+    read_all(fd, res.payload, res.header.size);
 
     close(fd);
 

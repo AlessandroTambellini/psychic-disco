@@ -10,6 +10,7 @@
 typedef enum {
     CONN_REQ,
     CONN_RES,
+    CONN_EXEC,
     CONN_END,
 } ConnState;
 
