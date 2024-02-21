@@ -18,10 +18,10 @@ typedef enum {
     RESET,
     GET,
     DELETE,
-} MsgType;
+} Method;
 
 typedef struct {
-    int32_t type; // enum MsgType
+    int32_t type; // enum Method
     uint32_t size;
 } RequestHeader;
 
@@ -30,8 +30,14 @@ typedef struct {
     int8_t payload[PAYLOAD_SIZE];
 } Request;
 
+typedef enum {
+    SUCCESS,
+    FAILURE,
+    UNKNOWN_METHOD,
+} Status;
+
 typedef struct {
-    int32_t status;
+    int32_t status; // enum Status
     uint32_t size;
 } ResponseHeader;
 
@@ -48,3 +54,4 @@ bool handle_reset(Conn *conn, Request *req, Response *res);
 bool handle_get(Conn *conn, Request *req, Response *res);
 bool handle_delete(Conn *conn, Request *req, Response *res);
 bool handle_response(Conn *conn);
+bool handle_exec_state(Conn *conn);

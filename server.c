@@ -54,7 +54,7 @@ bool handle_request(Conn *conn)
                 exit(1);
                 return false;
             } else {
-                printf("EOF\n");
+                // printf("EOF\n");
             }
             conn->state = CONN_END;
             break;
@@ -103,6 +103,8 @@ bool handle_request(Conn *conn)
                     handle_delete(conn, &req, &res);
                     break;
                 default:
+                    res.header.status = UNKNOWN_METHOD;
+                    res.header.size = 0;
                     break;
             }
 
@@ -138,12 +140,12 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
     bool rv = program_merge(program, (Instruction *)req->payload, n);
     if (!rv) {
         printf("Failed merge\n");
-        res->header.status = 1;
+        res->header.status = FAILURE;
         res->header.size = 0;
         return false;
     }
 
-    res->header.status = 0;
+    res->header.status = SUCCESS;
     res->header.size = 0;
     return true;
 }
@@ -152,7 +154,7 @@ bool handle_exec(Conn *conn, Request *req, Response *res)
 {
     loop(conn->vm);
     size_t size = MIN(DATA_SIZE, PAYLOAD_SIZE);
-    res->header.status = 0;
+    res->header.status = SUCCESS;
     res->header.size = size;
     memcpy(res->payload, conn->vm->data, size);
     return true;
@@ -163,13 +165,13 @@ bool handle_reset(Conn *conn, Request *req, Response *res)
     Program *program = conn->vm->program;
     bool rv = program_clear(program);
     if (!rv) {
-        res->header.status = 1;
+        res->header.status = FAILURE;
         res->header.size = 0;
         return false;
     }
 
-    res->header.status = 69;
-    res->header.size = 69;
+    res->header.status = SUCCESS;
+    res->header.size = 0;
     return true;
 }
 
@@ -182,12 +184,12 @@ bool handle_get(Conn *conn, Request *req, Response *res)
     Program *program = conn->vm->program;
     bool rv = program_get(program, (Instruction *)res->payload, start, size);
     if (!rv) {
-        res->header.status = 1;
+        res->header.status = FAILURE;
         res->header.size = 0;
         return false;
     }
 
-    res->header.status = 0;
+    res->header.status = SUCCESS;
     res->header.size = size * sizeof(Instruction);
     return true;
 }
@@ -199,12 +201,12 @@ bool handle_delete(Conn *conn, Request *req, Response *res)
     Program *program = conn->vm->program;
     bool rv = program_delete(program, start, size);
     if (!rv) {
-        res->header.status = 1;
+        res->header.status = FAILURE;
         res->header.size = 0;
         return false;
     }
 
-    res->header.status = 0;
+    res->header.status = SUCCESS;
     res->header.size = 0;
     return true;
 }
