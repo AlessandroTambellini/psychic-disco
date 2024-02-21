@@ -44,11 +44,48 @@ void loop(Vm *vm)
 
         // Handle result
         if (res != OK) {
-            printf("Error: %s at instruction %d.\n", res_names[res], vm->pc);
+            printf("Error: %s at instruction %d\n", res_names[res], vm->pc);
             break;
         }
     }
 }
+
+// Fetch-execute loop nonblocking
+bool loopn(Vm *vm)
+{
+    Instruction *inst;
+    size_t count = 0;
+    while (1) {
+        // Fetch instruction
+        inst = fetch(vm);
+
+        // Increment program counter
+        vm->pc++;
+        count++;
+
+        // Execute instruction
+        InstResult res = execute(vm, inst);
+
+        // Handle result
+        if (res != OK) {
+            printf("Error: %s at instruction %d\n", res_names[res], vm->pc);
+            break;
+        }
+
+        // Check if program finished
+        if (vm->pc >= program_size(vm->program)) {
+            return true;
+        }
+
+        // Check if execution exceeded context size
+        if (count >= CONTEXT_SIZE) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 Instruction *fetch(Vm *vm)
 {

@@ -40,7 +40,7 @@ bool handle_request(Conn *conn)
         // Check if the file is ready for polling
         if (bytes < 0) {
             if (errno != EAGAIN) {
-                printf("Failed to read request.\n");
+                printf("Failed to read from request buffer\n");
                 conn->state = CONN_END;
                 return false;
             }
@@ -82,8 +82,6 @@ bool handle_request(Conn *conn)
             // Read payload
             Request req = { header };
             memcpy(req.payload, conn->rbuf + sizeof(header), header.size);
-            // printf("payload %d\n", ((int *)req.payload)[0]);
-            // printf("payload %d\n", ((int *)req.payload)[1]);
 
             Response res = {0};
             switch (req.header.type) {
@@ -139,7 +137,7 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
     Program *program = conn->vm->program;
     bool rv = program_merge(program, (Instruction *)req->payload, n);
     if (!rv) {
-        printf("Failed merge\n");
+        printf("Failed to merge program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
         return false;
@@ -152,11 +150,16 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
 
 bool handle_exec(Conn *conn, Request *req, Response *res)
 {
-    loop(conn->vm);
-    size_t size = MIN(DATA_SIZE, PAYLOAD_SIZE);
-    res->header.status = SUCCESS;
-    res->header.size = size;
-    memcpy(res->payload, conn->vm->data, size);
+    bool rv = loopn(conn->vm);
+    if (rv) {
+        size_t size = MIN(DATA_SIZE, PAYLOAD_SIZE);
+        res->header.status = SUCCESS;
+        res->header.size = size;
+        memcpy(res->payload, conn->vm->data, size);
+    } else {
+        res->header.status = FAILURE;
+        res->header.size = 0;
+    }
     return true;
 }
 
@@ -222,7 +225,7 @@ bool handle_response(Conn *conn)
 
         if (bytes < 0) {
             if (errno != EAGAIN) {
-                printf("Failed to write to fd.\n");
+                printf("Failed to write to response buffer\n");
                 conn->state = CONN_END;
                 return false;
             }
@@ -245,10 +248,9 @@ int main()
 {
     // 1) socket()
     int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0) {
-        printf("Failed socket()\n");
-        exit(1);
-    }
+    if (fd < 0)
+        die("Failed to create welcome socket\n");
+
     int val = 1;
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
 
@@ -258,17 +260,13 @@ int main()
     addr.sin_port = htons(8080);
     addr.sin_addr.s_addr = htonl(0);
     int rv = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
-    if (rv < 0) {
-        printf("Failed bind()\n");
-        exit(1);
-    }
+    if (rv < 0)
+        die("Failed to bind address to socket\n");
 
     // 3) listen()
     listen(fd, SOMAXCONN);
-    if (rv < 0) {
-        printf("Failed listen()\n");
-        exit(1);
-    }
+    if (rv < 0)
+        die("Failed to listen from welcome socket\n");
 
     set_nonblocking(fd);
 
@@ -283,17 +281,16 @@ int main()
     while (1) {
         size_t pa_size;
         if (!el_get_pa(&el, pa, &pa_size)) {
-            printf("Failed to get pollfds from connections.\n");
+            printf("Failed to get poll array from event loop\n");
         }
 
         // for (size_t i = 0; i < pa_size; i++) {
         //     printf("%d ", pa[i].fd);
         // }
         // printf("\n");
-        //
 
         if (poll(pa, (nfds_t)pa_size, 1000) < 0) {
-            printf("Failed polling operation.\n");
+            printf("Failed to poll fds\n");
         }
 
         for (size_t i = 1; i < pa_size; i++) {
@@ -312,7 +309,7 @@ int main()
             socklen_t socklen = sizeof(client_addr);
             int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
             if (connfd < 0) {
-                printf("Failed to accept new connection.\n");
+                printf("Failed to accept new connection\n");
                 return -1;
             }
 

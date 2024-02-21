@@ -22,6 +22,8 @@ static const char *res_names[] = {
 };
 #undef RES_STRING
 
+#define CONTEXT_SIZE 64
+
 typedef struct {
     Program *program;
     int pc;
@@ -37,6 +39,7 @@ void memory_print(Vm *vm);
 
 // Fetch-execute loop
 void loop(Vm *vm);
+bool loopn(Vm *vm);
 Instruction *fetch(Vm *vm);
 InstResult execute(Vm *vm, Instruction *inst);
 
