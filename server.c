@@ -297,8 +297,7 @@ int main()
             if (pa[i].revents) {
                 int fd = pa[i].fd;
                 Conn *conn = el_get(&el, fd);
-                handle_connection(conn);
-                if (conn->state == CONN_END) {
+                if (!handle_connection(conn)) {
                     el_remove(&el, fd);
                 }
             }

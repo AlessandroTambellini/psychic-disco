@@ -37,7 +37,7 @@ typedef struct {
 } Instruction;
 
 typedef struct {
-    Instruction *v;
+    Instruction *items;
     size_t capacity; // maximum size before re-init
     size_t size; // current size
 } Program;

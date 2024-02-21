@@ -7,8 +7,8 @@
 
 bool program_init(Program *program)
 {
-    program->v = (Instruction *)malloc(sizeof(Instruction));
-    if (program->v == NULL)
+    program->items = (Instruction *)malloc(sizeof(Instruction));
+    if (program->items == NULL)
         return false;
 
     program->capacity = 1;
@@ -22,10 +22,10 @@ bool program_deinit(Program *program)
     if (program == NULL)
         return false;
 
-    if (program->v == NULL) {
+    if (program->items == NULL) {
         return false;
     } else {
-        free(program->v);
+        free(program->items);
     }
 
     return true;
@@ -33,7 +33,7 @@ bool program_deinit(Program *program)
 
 Instruction *program_data(Program *program)
 {
-    return program->v;
+    return program->items;
 }
 
 size_t program_capacity(Program *program)
@@ -48,13 +48,13 @@ size_t program_size(Program *program)
 
 bool program_resize(Program *program, size_t capacity_new)
 {
-    Instruction *v_new = realloc(program->v, capacity_new * sizeof(Instruction));
+    Instruction *v_new = realloc(program->items, capacity_new * sizeof(Instruction));
     if (v_new == NULL) {
         printf("Failed to reallocate program vector\n");
         return false;
     }
 
-    program->v = v_new;
+    program->items = v_new;
     program->capacity = capacity_new;
 
     return true;
@@ -79,7 +79,7 @@ bool program_copy(Program *program, Program *src)
         return false;
     }
 
-    memcpy(program->v, src->v, src->size * sizeof(Instruction));
+    memcpy(program->items, src->items, src->size * sizeof(Instruction));
 
     program->size = src->size;
     program->capacity = src->capacity;
@@ -94,7 +94,7 @@ bool program_merge(Program *program, Instruction *src, size_t size)
         return false;
     }
 
-    Instruction *dst = program->v + program->size;
+    Instruction *dst = program->items + program->size;
 
     memcpy(dst, src, size * sizeof(Instruction));
     program->size += size;
@@ -104,11 +104,11 @@ bool program_merge(Program *program, Instruction *src, size_t size)
 
 bool program_split(Program *program, Instruction *dst, size_t size)
 {
-    memcpy(dst, program->v, size * sizeof(Instruction));
+    memcpy(dst, program->items, size * sizeof(Instruction));
     size_t size_new = program->size - size;
     program->size = size_new;
     if (size_new) {
-        memmove(program->v, program->v + size, size_new * sizeof(Instruction));
+        memmove(program->items, program->items + size, size_new * sizeof(Instruction));
     }
     return true;
 }
@@ -122,7 +122,9 @@ bool program_delete(Program *program, size_t start, size_t size)
 
     size_t remain = program->size - start - size;
 
-    memmove(program->v + start, program->v + start + size, remain * sizeof(Instruction));
+    Instruction *dst = program->items + start;
+    Instruction *src = program->items + start + size;
+    memmove(dst, src, remain * sizeof(Instruction));
 
     program->size -= size;
 
@@ -136,7 +138,7 @@ bool program_get(Program *program, Instruction *dst, size_t start, size_t size)
         return false;
     }
 
-    memcpy(dst, program->v + start, size * sizeof(Instruction));
+    memcpy(dst, program->items + start, size * sizeof(Instruction));
     return true;
 }
 
@@ -150,7 +152,7 @@ bool program_add(Program *program, Instruction inst)
         }
     }
 
-    program->v[program->size] = inst;
+    program->items[program->size] = inst;
     program->size++;
 
     return true;
@@ -158,15 +160,15 @@ bool program_add(Program *program, Instruction inst)
 
 Instruction *program_fetch(Program *program, size_t index)
 {
-    return &program->v[index];
+    return &program->items[index];
 }
 
 void program_print(Program *program)
 {
-    Instruction *v = program->v;
+    Instruction *items = program->items;
 
     for (size_t i = 0; i < program->size; i++) {
-        inst_print(v[i], i);
+        inst_print(items[i], i);
     }
 }
 

@@ -1,11 +1,11 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define MIN(a, b) a < b ? a : b
-
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+
+#define MIN(a, b) a < b ? a : b
 
 void die(char *s)
 {
