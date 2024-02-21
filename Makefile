@@ -10,7 +10,7 @@ server: server.o program.o vm.o el.o
 client: client.o program.o
 	$(CC) $(CFLAGS) -o client client.o program.o
 
-test: client
+test: server client
 	sh test.sh
 
 clean:

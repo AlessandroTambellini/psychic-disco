@@ -10,7 +10,7 @@ bool el_init(EventLoop *el)
     el->size = size;
     el->conn = (Conn **)calloc(size, sizeof(Conn *));
     if (!el->conn) {
-        printf("Failed allocation.\n");
+        printf("Failed to allocate event loop\n");
         return false;
     }
 
@@ -23,7 +23,7 @@ bool el_resize(EventLoop *el, size_t size_new)
     el->size = size_new;
     el->conn = (Conn **)realloc(el->conn, size_new * sizeof(Conn *));
     if (!el->conn) {
-        printf("Failed reallocation.\n");
+        printf("Failed to reallocate event loop\n");
         return false;
     }
 
@@ -43,7 +43,7 @@ bool el_add(EventLoop *el, int fd)
 
     Conn *conn = (Conn *)malloc(sizeof(Conn));
     if (!conn) {
-        printf("Failed allocation.\n");
+        printf("Failed to allocate connection event\n");
         return false;
     }
 
@@ -96,7 +96,7 @@ bool el_get_pa(EventLoop *el, struct pollfd *pa, size_t *pa_size)
             pfd.events = pfd.events | POLLERR;
             pa[pos++] = pfd;
         } else {
-            printf("Event loop is not able to handle this number of clients.\n");
+            printf("Event loop is not able to handle this number of clients\n");
             el_remove(el, fd);
         }
     }

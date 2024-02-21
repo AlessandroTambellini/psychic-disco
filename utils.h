@@ -45,7 +45,7 @@ void set_nonblocking(int fd)
     errno = 0;
     int flags = fcntl(fd, F_GETFL, 0);
     if (errno) {
-        printf("Failed fcntl()\n");
+        printf("Failed to get fd flags\n");
         return;
     }
 
@@ -54,7 +54,7 @@ void set_nonblocking(int fd)
     errno = 0;
     (void)fcntl(fd, F_SETFL, flags);
     if (errno) {
-        printf("Failed fcntl()\n");
+        printf("Failed to set fd flags\n");
     }
 }
 

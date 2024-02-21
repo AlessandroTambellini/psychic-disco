@@ -12,7 +12,7 @@ int main()
 {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
-        die("Failed socket()\n");
+        die("Failed to create connection socket\n");
     }
 
     struct sockaddr_in addr = {0};
@@ -22,7 +22,7 @@ int main()
     // addr.sin_addr.s_addr = inet_addr("192.168.1.202");
     int rv = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
     if (rv < 0) {
-        die("Failed connect()\n");
+        die("Failed to connect to server socket\n");
     }
 
     // Create program (factorial of 5)

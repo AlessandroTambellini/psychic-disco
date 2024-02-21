@@ -50,7 +50,7 @@ bool program_resize(Program *program, size_t capacity_new)
 {
     Instruction *v_new = realloc(program->v, capacity_new * sizeof(Instruction));
     if (v_new == NULL) {
-        printf("Memory reallocation failed.\n");
+        printf("Failed to reallocate program vector\n");
         return false;
     }
 
@@ -76,7 +76,6 @@ bool program_copy(Program *program, Program *src)
 {
     bool rv = program_resize(program, src->capacity);
     if (!rv) {
-        printf("Failed resize during program copy.\n");
         return false;
     }
 
@@ -92,7 +91,6 @@ bool program_merge(Program *program, Instruction *src, size_t size)
 {
     bool rv = program_resize(program, program->capacity + size);
     if (!rv) {
-        printf("Failed resize during program merge.\n");
         return false;
     }
 
@@ -118,7 +116,7 @@ bool program_split(Program *program, Instruction *dst, size_t size)
 bool program_delete(Program *program, size_t start, size_t size)
 {
     if (start + size >= program->size) {
-        printf("Interval is outside program bounds.\n");
+        printf("Interval is outside of the program bounds\n");
         return false;
     }
 
@@ -134,7 +132,7 @@ bool program_delete(Program *program, size_t start, size_t size)
 bool program_get(Program *program, Instruction *dst, size_t start, size_t size)
 {
     if (start + size >= program->size) {
-        printf("Interval is outside program bounds.\n");
+        printf("Interval is outside of the program bounds\n");
         return false;
     }
 
@@ -148,7 +146,6 @@ bool program_add(Program *program, Instruction inst)
 {
     if (program->size == program->capacity) {
         if (!program_inc_capacity(program)) {
-            printf("Failed to increase capacity.\n");
             return false;
         }
     }
