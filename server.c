@@ -247,35 +247,35 @@ bool handle_response(Conn *conn)
 int main()
 {
     // 1) socket()
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0)
+    int welcfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (welcfd < 0)
         die("Failed to create welcome socket\n");
 
     int val = 1;
-    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
+    setsockopt(welcfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
 
     // 2) bind()
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(8080);
     addr.sin_addr.s_addr = htonl(0);
-    int rv = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
+    int rv = bind(welcfd, (struct sockaddr *)&addr, sizeof(addr));
     if (rv < 0)
         die("Failed to bind address to socket\n");
 
     // 3) listen()
-    listen(fd, SOMAXCONN);
+    listen(welcfd, SOMAXCONN);
     if (rv < 0)
         die("Failed to listen from welcome socket\n");
 
-    set_nonblocking(fd);
+    set_nonblocking(welcfd);
 
     EventLoop el;
     el_init(&el);
 
     // Pollfd Array
     struct pollfd pa[MAX_CONN];
-    struct pollfd pfd = {fd, POLLIN, 0};
+    struct pollfd pfd = {welcfd, POLLIN, 0};
     pa[0] = pfd;
 
     while (1) {
@@ -283,11 +283,6 @@ int main()
         if (!el_get_pa(&el, pa, &pa_size)) {
             printf("Failed to get poll array from event loop\n");
         }
-
-        // for (size_t i = 0; i < pa_size; i++) {
-        //     printf("%d ", pa[i].fd);
-        // }
-        // printf("\n");
 
         if (poll(pa, (nfds_t)pa_size, 1000) < 0) {
             printf("Failed to poll fds\n");
@@ -306,7 +301,7 @@ int main()
         if (pa[0].revents) {
             struct sockaddr_in client_addr = {0};
             socklen_t socklen = sizeof(client_addr);
-            int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
+            int connfd = accept(welcfd, (struct sockaddr *)&client_addr, &socklen);
             if (connfd < 0) {
                 printf("Failed to accept new connection\n");
                 return -1;
