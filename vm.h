@@ -4,7 +4,7 @@
 #include "program.h"
 #include "stddef.h"
 
-#define DATA_SIZE 1000
+#define DATA_SIZE 1024
 
 typedef enum {
     OK,
@@ -22,20 +22,24 @@ static const char *res_names[] = {
 };
 #undef RES_STRING
 
+#define CONTEXT_SIZE 64
+
 typedef struct {
-    Program program;
+    Program *program;
     int pc;
     int data[DATA_SIZE];
 } Vm;
 
 // Interpreter
-void vm_init(Vm *vm, Program *program);
+void vm_init(Vm *vm);
+void vm_deinit(Vm *vm);
 
 // Memory
 void memory_print(Vm *vm);
 
 // Fetch-execute loop
 void loop(Vm *vm);
+bool loopn(Vm *vm);
 Instruction *fetch(Vm *vm);
 InstResult execute(Vm *vm, Instruction *inst);
 
@@ -48,7 +52,8 @@ InstResult subi(Vm *vm, int dest, int arg1, int arg2);
 InstResult subi(Vm *vm, int dest, int arg1, int arg2);
 InstResult mul(Vm *vm, int dest, int arg1, int arg2);
 InstResult muli(Vm *vm, int dest, int arg1, int arg2);
-InstResult div(Vm *vm, int dest, int arg1, int arg2);
+// Renamed to ddiv to avoid conflict with stdlib's div_t div(int, int)
+InstResult ddiv(Vm *vm, int dest, int arg1, int arg2);
 InstResult divi(Vm *vm, int dest, int arg1, int arg2);
 
 InstResult movi(Vm *vm, int dest, int arg1);
