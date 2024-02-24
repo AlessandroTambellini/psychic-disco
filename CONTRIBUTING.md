@@ -13,15 +13,3 @@ To contribbute to the codebase, our syntax rules have to be followed:
 - if a function does not accept parameters, explicit it  
     ✔️ `int myFunc(void);`  
     ❌ `int myFunc();`  
-
-- always add function declaration and at the top of file. Also respect the following syntax (just for declaration):  
-    ✔️ 
-    ```
-        int 
-        handlePrint(void);
-    ```
-    ❌ 
-    ```
-        int handlePrint(void);
-    ```
-    the reason is it facilitate regex to search function declarations and readability because the names are always at the start of the line
