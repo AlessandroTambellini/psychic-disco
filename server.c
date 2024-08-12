@@ -131,6 +131,7 @@ bool handle_request(Conn *conn)
 
 bool handle_merge(Conn *conn, Request *req, Response *res)
 {
+    printf("MERGE...\n");
     size_t bytes = req->header.size;
     size_t n = bytes / sizeof(Instruction);
 
@@ -150,6 +151,7 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
 
 bool handle_exec(Conn *conn, Request *req, Response *res)
 {
+    printf("EXEC...\n");
     bool rv = loopn(conn->vm);
     if (rv) {
         size_t size = MIN(DATA_SIZE, PAYLOAD_SIZE);
@@ -165,6 +167,7 @@ bool handle_exec(Conn *conn, Request *req, Response *res)
 
 bool handle_reset(Conn *conn, Request *req, Response *res)
 {
+    printf("RESET...\n");
     Program *program = conn->vm->program;
     bool rv = program_clear(program);
     if (!rv) {
@@ -180,6 +183,7 @@ bool handle_reset(Conn *conn, Request *req, Response *res)
 
 bool handle_get(Conn *conn, Request *req, Response *res)
 {
+    printf("GET...\n");
     size_t start = ((uint32_t *)req->payload)[0];
     size_t size = ((uint32_t *)req->payload)[1];
     size = MIN(size, PAYLOAD_SIZE / sizeof(Instruction));
@@ -199,6 +203,7 @@ bool handle_get(Conn *conn, Request *req, Response *res)
 
 bool handle_delete(Conn *conn, Request *req, Response *res)
 {
+    printf("DELETE...\n");
     size_t start = ((uint32_t *)req->payload)[0];
     size_t size = ((uint32_t *)req->payload)[1];
     Program *program = conn->vm->program;

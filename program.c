@@ -177,3 +177,53 @@ void inst_print(Instruction inst, size_t index)
     printf("[0x%.4zx]: %i %i %i %i\n", index, inst.code,
         inst.dest, inst.arg1, inst.arg2);
 }
+
+bool inst_decode(char *buffer, OpCode *code)
+{
+    if (strcmp(buffer, "add") == 0) {
+        *code = ADD;
+    } else if (strcmp(buffer, "addi") == 0) {
+        *code = ADDI;
+    } else if (strcmp(buffer, "sub") == 0) {
+        *code = SUB;
+    } else if (strcmp(buffer, "subi") == 0) {
+        *code = SUBI;
+    } else if (strcmp(buffer, "mul") == 0) {
+        *code = MUL;
+    } else if (strcmp(buffer, "muli") == 0) {
+        *code = MULI;
+    } else if (strcmp(buffer, "div") == 0) {
+        *code = DIV;
+    } else if (strcmp(buffer, "divi") == 0) {
+        *code = DIVI;
+    } else if (strcmp(buffer, "mov") == 0) {
+        *code = MOV;
+    } else if (strcmp(buffer, "movi") == 0) {
+        *code = MOVI;
+    } else if (strcmp(buffer, "b") == 0) {
+        *code = B;
+    } else if (strcmp(buffer, "beq") == 0) {
+        *code = BEQ;
+    } else if (strcmp(buffer, "beqi") == 0) {
+        *code = BEQI;
+    } else if (strcmp(buffer, "bne") == 0) {
+        *code = BNE;
+    } else if (strcmp(buffer, "bnei") == 0) {
+        *code = BNEI;
+    } else if (strcmp(buffer, "bge") == 0) {
+        *code = BGE;
+    } else if (strcmp(buffer, "bgei") == 0) {
+        *code = BGEI;
+    } else if (strcmp(buffer, "blei") == 0) {
+        *code = BLEI;
+    } else if (strcmp(buffer, "ret") == 0) {
+        *code = RET;
+    } else if (strcmp(buffer, "reti") == 0) {
+        *code = RETI;
+    } else if (strcmp(buffer, "halt") == 0) {
+        *code = HALT;
+    } else {
+        return false;
+    }
+    return true;
+}

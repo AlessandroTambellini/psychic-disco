@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define MIN(a, b) a < b ? a : b
 

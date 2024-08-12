@@ -57,7 +57,8 @@ bool program_delete(Program *program, size_t start, size_t size);
 bool program_get(Program *program, Instruction *dst, size_t start, size_t size);
 bool program_add(Program *program, Instruction inst);
 void program_print(Program *program);
-void inst_print(Instruction inst, size_t index);
 Instruction *program_fetch(Program *program, size_t index);
+void inst_print(Instruction inst, size_t index);
+bool inst_decode(char *buffer, OpCode *code);
 
 #endif
