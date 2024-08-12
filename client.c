@@ -63,7 +63,7 @@ int main()
         program_split(&program, (Instruction *)req.payload, n);
         req.header = (RequestHeader) {
             .type = MERGE,
-                .size = size
+            .size = size
         };
         size_t req_size = sizeof(req.header) + req.header.size;
         write_all(fd, &req, req_size);

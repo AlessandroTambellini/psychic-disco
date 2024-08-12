@@ -1,6 +1,7 @@
 CC=gcc
 CFLAGS=-Wall
 INSTALL_PATH=/usr/bin
+SERVER_NAME=pd-server
 
 all: server client
 
@@ -18,8 +19,8 @@ clean:
 
 install: server
 	echo Installing executable to ${INSTALL_PATH}
-	mv server ${INSTALL_PATH}/server
+	mv server ${INSTALL_PATH}/${PD_SERVER}
 
 uninstall:
 	echo Removing executable from ${INSTALL_PATH}
-	rm ${INSTALL_PATH}/server
+	rm ${INSTALL_PATH}/${PD_SERVER}
