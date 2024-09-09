@@ -268,7 +268,8 @@ int main()
     // 2) bind()
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(8080);
+    uint16_t port = 8080;
+    addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(0);
     int rv = bind(welcfd, (struct sockaddr *)&addr, sizeof(addr));
     if (rv < 0)
@@ -278,6 +279,8 @@ int main()
     listen(welcfd, SOMAXCONN);
     if (rv < 0)
         die("Failed to listen from welcome socket\n");
+    else
+        printf("Listening on port %d...\n", port);
 
     set_nonblocking(welcfd);
 

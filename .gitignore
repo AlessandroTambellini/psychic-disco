@@ -38,6 +38,7 @@
 server
 client
 test
+repl
 
 # Debug files
 *.dSYM/
