@@ -152,13 +152,16 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
 bool handle_exec(Conn *conn, Request *req, Response *res)
 {
     printf("EXEC...\n");
+    reset(conn->vm);
     bool rv = loopn(conn->vm);
     if (rv) {
-        size_t size = MIN(DATA_SIZE, PAYLOAD_SIZE);
+        size_t size = MIN(DATA_SIZE * sizeof(conn->vm->data[0]),
+                          PAYLOAD_SIZE * sizeof(res->payload[0]));
         res->header.status = SUCCESS;
-        res->header.size = size;
+        res->header.size = sizeof(int);
         memcpy(res->payload, conn->vm->data, size);
     } else {
+        printf("Failed to exec program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
     }
@@ -168,9 +171,10 @@ bool handle_exec(Conn *conn, Request *req, Response *res)
 bool handle_reset(Conn *conn, Request *req, Response *res)
 {
     printf("RESET...\n");
-    Program *program = conn->vm->program;
-    bool rv = program_clear(program);
+    bool rv = program_clear(conn->vm->program);
+    reset(conn->vm);
     if (!rv) {
+        printf("Failed to reset program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
         return false;
@@ -189,16 +193,17 @@ bool handle_get(Conn *conn, Request *req, Response *res)
     size = MIN(size, PAYLOAD_SIZE / sizeof(Instruction));
 
     Program *program = conn->vm->program;
-    bool rv = program_get(program, (Instruction *)res->payload, start, size);
-    if (!rv) {
-        res->header.status = FAILURE;
-        res->header.size = 0;
-        return false;
+    size_t n = program_get(program, (Instruction *)res->payload, start, size);
+    if (n) {
+        res->header.status = SUCCESS;
+        res->header.size = n * sizeof(Instruction);
+        return true;
     }
 
-    res->header.status = SUCCESS;
-    res->header.size = size * sizeof(Instruction);
-    return true;
+    printf("Failed to get program\n");
+    res->header.status = FAILURE;
+    res->header.size = 0;
+    return false;
 }
 
 bool handle_delete(Conn *conn, Request *req, Response *res)
@@ -207,16 +212,17 @@ bool handle_delete(Conn *conn, Request *req, Response *res)
     size_t start = ((uint32_t *)req->payload)[0];
     size_t size = ((uint32_t *)req->payload)[1];
     Program *program = conn->vm->program;
-    bool rv = program_delete(program, start, size);
-    if (!rv) {
-        res->header.status = FAILURE;
-        res->header.size = 0;
-        return false;
+    size_t n = program_delete(program, start, size);
+    if (n) {
+        res->header.status = SUCCESS;
+        res->header.size = n;
+        return true;
     }
 
-    res->header.status = SUCCESS;
-    res->header.size = 0;
-    return true;
+    printf("Failed to delete program\n");
+    res->header.status = FAILURE;
+    res->header.size = n;
+    return false;
 }
 
 bool handle_response(Conn *conn)

@@ -86,11 +86,14 @@ bool loopn(Vm *vm)
     return true;
 }
 
+void reset(Vm *vm)
+{
+    vm->pc = 0;
+}
 
 Instruction *fetch(Vm *vm)
 {
-    size_t pc = vm->pc;
-    return program_fetch(vm->program, pc);
+    return program_fetch(vm->program, vm->pc);
 }
 
 // Pointer to interpreter cause we need
@@ -273,7 +276,7 @@ InstResult divi(Vm *vm, int dest, int arg1, int arg2)
 
 InstResult movi(Vm *vm, int dest, int arg1)
 {
-    if (CHECK_DATA_BOUNDS_2(dest, arg1)) {
+    if (CHECK_DATA_BOUNDS(dest)) {
         vm->data[dest] = arg1;
         return OK;
     }

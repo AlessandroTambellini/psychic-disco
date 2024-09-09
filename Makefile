@@ -3,6 +3,8 @@ CFLAGS=-Wall
 INSTALL_PATH=/usr/bin
 SERVER_NAME=pd-server
 
+.INTERMEDIATE: server.o program.o vm.o el.o client.o repl.o
+
 all: server client repl
 
 server: server.o program.o vm.o el.o

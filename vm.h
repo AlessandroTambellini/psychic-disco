@@ -40,6 +40,7 @@ void memory_print(Vm *vm);
 // Fetch-execute loop
 void loop(Vm *vm);
 bool loopn(Vm *vm);
+void reset(Vm *vm);
 Instruction *fetch(Vm *vm);
 InstResult execute(Vm *vm, Instruction *inst);
 

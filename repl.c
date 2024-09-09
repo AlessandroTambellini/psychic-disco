@@ -22,7 +22,7 @@
 
 #define CODE_SIZE 100
 
-void merge_mode(Program *program, int fd)
+void merge_mode(Program *program)
 {
     char code[CODE_SIZE];
     while (1) {
@@ -43,19 +43,27 @@ void merge_mode(Program *program, int fd)
             fprintf(stderr, "Not a valid instruction.\n");
         }
     }
+}
+
+void repl_merge(int fd)
+{
+    Program program;
+    program_init(&program);
+
+    merge_mode(&program);
 
     Request req;
     Response res;
 
     size_t count = 0;
 
-    while (program_size(program)) {
-        size_t n = MIN(program_size(program),
+    while (program_size(&program)) {
+        size_t n = MIN(program_size(&program),
                 PAYLOAD_SIZE/sizeof(Instruction)); // MIN(9, 16);
 
         size_t size = n * sizeof(Instruction);
 
-        program_split(program, (Instruction *)req.payload, n);
+        program_split(&program, (Instruction *)req.payload, n);
         req.header = (RequestHeader) {
             .type = MERGE,
             .size = size
@@ -69,6 +77,75 @@ void merge_mode(Program *program, int fd)
         read_all(fd, &res.header, sizeof(res.header));
         read_all(fd, res.payload, res.header.size);
     }
+
+    program_deinit(&program);
+}
+
+void repl_get(int fd)
+{
+    Program program;
+    program_init(&program);
+
+    size_t offset = 0;
+    const size_t chunk = PAYLOAD_SIZE / sizeof(Instruction);
+
+    Request req;
+    Response res;
+
+    do {
+        req.header = (RequestHeader) {
+            .type = GET,
+            .size = 2 * 4
+        };
+        ((uint32_t *)req.payload)[0] = offset;
+        ((uint32_t *)req.payload)[1] = chunk;
+        write_all(fd, &req, sizeof(req.header) + req.header.size);
+
+        read_all(fd, &res, sizeof(res.header));
+        read_all(fd, res.payload, res.header.size);
+        program_merge(&program, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
+
+        offset += chunk;
+    } while (res.header.size > 0);
+
+    program_print(&program);
+    program_deinit(&program);
+}
+
+void repl_exec(int fd)
+{
+    Request req;
+    req.header = (RequestHeader) {
+        .type = EXEC,
+        .size = 0
+    };
+    write_all(fd, &req, sizeof(req.header));
+
+    Response res;
+    read_all(fd, &res, sizeof(res.header));
+    read_all(fd, res.payload, res.header.size);
+    printf("%d\n", ((int32_t *)res.payload)[0]);
+}
+
+void repl_help()
+{
+    const char *help =
+        "Commands: \n"
+        "   - merge: write down instructions and then merge them to the server\n"
+        "       - this command will enter `merge mode`\n"
+        "       - you can write assembly in this format <opcode> <dest> <arg1> <arg2>\n"
+        "   - get: get the current state of the server\n"
+        "   - exec: execute the current state of the server\n"
+        "   - delete <start> <size>: delete <size> instructions starting from <start>\n"
+        "Example usage:\n"
+        "   > merge\n"
+        "   # movi 0 69420 0\n"
+        "   # done\n"
+        "   > get\n"
+        "   [0x0000]: 9 0 69420 0\n"
+        "   > exec\n"
+        "   69420\n";
+        printf("%s", help);
 }
 
 int main()
@@ -88,9 +165,6 @@ int main()
         die("Failed to connect to server socket\n");
     }
 
-    Program program;
-    program_init(&program);
-
     char buffer[CODE_SIZE];
     while (1) {
         memset(buffer, 0, CODE_SIZE);
@@ -98,10 +172,14 @@ int main()
         scanf("%s", buffer);
 
         if (strcmp(buffer, "merge") == 0) {
-            merge_mode(&program, fd);
+            repl_merge(fd);
         } else if (strcmp(buffer, "get") == 0) {
+            repl_get(fd);
         } else if (strcmp(buffer, "exec") == 0) {
+            repl_exec(fd);
         } else if (strcmp(buffer, "delete") == 0) {
+        } else if (strcmp(buffer, "help") == 0) {
+            repl_help();
         } else {
             fprintf(stderr, "Not a valid command.\n");
         }

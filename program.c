@@ -113,11 +113,14 @@ bool program_split(Program *program, Instruction *dst, size_t size)
     return true;
 }
 
-bool program_delete(Program *program, size_t start, size_t size)
+size_t program_delete(Program *program, size_t start, size_t size)
 {
-    if (start + size >= program->size) {
-        printf("Interval is outside of the program bounds\n");
-        return false;
+    if (start < 0 || start >= program->size) {
+        return 0;
+    }
+
+    if (start + size > program->size) {
+        size = program->size - start;
     }
 
     size_t remain = program->size - start - size;
@@ -128,18 +131,21 @@ bool program_delete(Program *program, size_t start, size_t size)
 
     program->size -= size;
 
-    return true;
+    return size;
 }
 
-bool program_get(Program *program, Instruction *dst, size_t start, size_t size)
+size_t program_get(Program *program, Instruction *dst, size_t start, size_t size)
 {
-    if (start + size >= program->size) {
-        printf("Interval is outside of the program bounds\n");
-        return false;
+    if (start < 0 || start >= program->size) {
+        return 0;
+    }
+
+    if (start + size > program->size) {
+        size = program->size - start;
     }
 
     memcpy(dst, program->items + start, size * sizeof(Instruction));
-    return true;
+    return size;
 }
 
 // Pointer to program cause we may need to

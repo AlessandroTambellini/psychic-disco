@@ -10,7 +10,7 @@
 
 // PAYLOAD_SIZE should be a value greater than sizeof(Instruction)
 // defined in program.h which, as of now, is 16 bytes
-#define PAYLOAD_SIZE 2 * 16
+#define PAYLOAD_SIZE (2 * sizeof(Instruction))
 
 typedef enum {
     MERGE,
@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
     RequestHeader header;
-    int8_t payload[PAYLOAD_SIZE];
+    uint8_t payload[PAYLOAD_SIZE];
 } Request;
 
 typedef enum {
@@ -43,7 +43,7 @@ typedef struct {
 
 typedef struct {
     ResponseHeader header;
-    int8_t payload[PAYLOAD_SIZE];
+    uint8_t payload[PAYLOAD_SIZE];
 } Response;
 
 bool handle_connection(Conn *conn);
