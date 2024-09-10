@@ -211,16 +211,17 @@ bool handle_delete(Conn *conn, Request *req, Response *res)
     size_t start = ((uint32_t *)req->payload)[0];
     size_t size = ((uint32_t *)req->payload)[1];
     Program *program = conn->vm->program;
-    size_t n = program_delete(program, start, size);
+    uint32_t n = program_delete(program, start, size);
     if (n) {
         res->header.status = SUCCESS;
-        res->header.size = n;
+        res->header.size = sizeof(n);
+        ((uint32_t *)res->payload)[0] = n;
         return true;
     }
 
     printf("Failed to delete program\n");
     res->header.status = FAILURE;
-    res->header.size = n;
+    res->header.size = 0;
     return false;
 }
 

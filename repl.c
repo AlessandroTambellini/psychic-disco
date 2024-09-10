@@ -115,6 +115,28 @@ void repl_exec(int fd)
     printf("%d\n", ((int32_t *)res.payload)[0]);
 }
 
+void repl_delete(int fd)
+{
+    uint32_t start, end;
+    scanf("%d %d", &start, &end);
+
+    Request req;
+    req.header = (RequestHeader) {
+        .type = DELETE,
+        .size = 2 * 4
+    };
+    ((uint32_t *)req.payload)[0] = start;
+    ((uint32_t *)req.payload)[1] = end;
+    write_all(fd, &req, sizeof(req.header) + req.header.size);
+
+    Response res;
+    read_all(fd, &res, sizeof(res.header));
+    read_all(fd, res.payload, res.header.size);
+    uint32_t size = ((uint32_t *)res.payload)[0];
+
+    printf("Deleted %d lines.\n", size);
+}
+
 void repl_help()
 {
     const char *help =
@@ -166,6 +188,7 @@ int main()
         } else if (strcmp(buffer, "exec") == 0) {
             repl_exec(fd);
         } else if (strcmp(buffer, "delete") == 0) {
+            repl_delete(fd);
         } else if (strcmp(buffer, "help") == 0) {
             repl_help();
         } else if (strcmp(buffer, "quit") == 0) {
