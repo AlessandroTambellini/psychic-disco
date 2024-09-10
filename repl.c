@@ -8,18 +8,6 @@
 #include "server.h"
 #include "utils.h"
 
-// > merge
-// # add a 1
-// # add b 2
-// # addi 3 2
-// # done
-// > get
-// # add a 1
-// # add b 2
-// # addi 3 2
-// > exec
-// > delete 0 3
-
 #define CODE_SIZE 100
 
 void merge_mode(Program *program)
@@ -28,7 +16,7 @@ void merge_mode(Program *program)
     while (1) {
         memset(code, 0, CODE_SIZE);
 
-        printf("# ");
+        printf("> ");
         scanf("%s", code);
         if (strcmp(code, "done") == 0) {
             break;
@@ -168,7 +156,7 @@ int main()
     char buffer[CODE_SIZE];
     while (1) {
         memset(buffer, 0, CODE_SIZE);
-        printf("> ");
+        printf("$ ");
         scanf("%s", buffer);
 
         if (strcmp(buffer, "merge") == 0) {
@@ -180,9 +168,13 @@ int main()
         } else if (strcmp(buffer, "delete") == 0) {
         } else if (strcmp(buffer, "help") == 0) {
             repl_help();
+        } else if (strcmp(buffer, "quit") == 0) {
+            close(fd);
+            break;
         } else {
             fprintf(stderr, "Not a valid command.\n");
         }
     }
+
     return 0;
 }

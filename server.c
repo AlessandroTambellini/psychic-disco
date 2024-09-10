@@ -200,7 +200,6 @@ bool handle_get(Conn *conn, Request *req, Response *res)
         return true;
     }
 
-    printf("Failed to get program\n");
     res->header.status = FAILURE;
     res->header.size = 0;
     return false;

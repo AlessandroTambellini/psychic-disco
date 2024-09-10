@@ -29,6 +29,30 @@ typedef enum {
     HALT
 } OpCode;
 
+const static char *opcode_of[] = {
+    [ADD] = "add",
+    [ADDI] = "addi",
+    [SUB] = "sub",
+    [SUBI] = "subi",
+    [MUL] = "mul",
+    [MULI] = "muli",
+    [DIV] = "div",
+    [DIVI] = "divi",
+    [MOV] = "mov",
+    [MOVI] = "movi",
+    [B] = "b",
+    [BEQ] = "beq",
+    [BEQI] = "beqi",
+    [BNE] = "bne",
+    [BNEI] = "bnei",
+    [BGE] = "bge",
+    [BGEI] = "bgei",
+    [BLEI] = "blei",
+    [RET] = "ret",
+    [RETI] = "reti",
+    [HALT] = "halt",
+};
+
 typedef struct {
     uint32_t code; // enum OpCode
     uint32_t dest;
