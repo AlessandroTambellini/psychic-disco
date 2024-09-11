@@ -8,24 +8,30 @@
 #include "server.h"
 #include "utils.h"
 
-#define CODE_SIZE 100
+#define CMD_SIZE 100
 
 void merge_mode(Program *program)
 {
-    char code[CODE_SIZE];
     while (1) {
-        memset(code, 0, CODE_SIZE);
-
         printf("> ");
-        scanf("%s", code);
+
+        char buffer[CMD_SIZE] = {0};
+
+        fgets(buffer, CMD_SIZE, stdin);
+        if (strcmp(buffer, "done") == 0) {
+            break;
+        }
+
+        Instruction inst = {0};
+        char code[CMD_SIZE] = {0};
+        sscanf(buffer, "%s %d %d %d", code,
+                &inst.dest, &inst.arg1, &inst.arg2);
         if (strcmp(code, "done") == 0) {
             break;
         }
 
-        Instruction inst;
-        int rv = inst_decode(code, &inst.code);
+        bool rv = inst_decode(code, &inst.code);
         if (rv) {
-            scanf("%d %d %d", &inst.dest, &inst.arg1, &inst.arg2);
             program_add(program, inst);
         } else {
             fprintf(stderr, "Not a valid instruction.\n");
@@ -112,18 +118,20 @@ void repl_exec(int fd)
     Response res;
     read_all(fd, &res, sizeof(res.header));
     read_all(fd, res.payload, res.header.size);
-    for (size_t i = 0; i < res.header.size / sizeof(int32_t); i++) {
-        // printf("[0x%.4zx]: %d\n", i, ((int32_t *)res.payload)[i]);
-        printf("%d ", ((int32_t *)res.payload)[i]);
+
+    if (res.header.status == SUCCESS) {
+        for (size_t i = 0; i < res.header.size / sizeof(int32_t); i++) {
+            // printf("[0x%.4zx]: %d\n", i, ((int32_t *)res.payload)[i]);
+            printf("%d ", ((int32_t *)res.payload)[i]);
+        }
+        printf("\n");
+    } else {
+        fprintf(stderr, "Failed to execute remote program.\n");
     }
-    printf("\n");
 }
 
-void repl_delete(int fd)
+void repl_delete(int fd, uint32_t start, uint32_t end)
 {
-    uint32_t start, end;
-    scanf("%d %d", &start, &end);
-
     Request req;
     req.header = (RequestHeader) {
         .type = DELETE,
@@ -136,9 +144,13 @@ void repl_delete(int fd)
     Response res;
     read_all(fd, &res, sizeof(res.header));
     read_all(fd, res.payload, res.header.size);
-    uint32_t size = ((uint32_t *)res.payload)[0];
 
-    printf("Deleted %d lines.\n", size);
+    if (res.header.status == SUCCESS) {
+        uint32_t size = ((uint32_t *)res.payload)[0];
+        printf("Deleted %d lines.\n", size);
+    } else {
+        fprintf(stderr, "Failed to delete lines.\n");
+    }
 }
 
 void repl_help()
@@ -179,23 +191,28 @@ int main()
         die("Failed to connect to server socket\n");
     }
 
-    char buffer[CODE_SIZE];
     while (1) {
-        memset(buffer, 0, CODE_SIZE);
         printf("$ ");
-        scanf("%s", buffer);
 
-        if (strcmp(buffer, "merge") == 0) {
+        char buffer[CMD_SIZE] = {0};
+        fgets(buffer, CMD_SIZE, stdin);
+
+        char cmd[CMD_SIZE] = {0};
+        sscanf(buffer, "%s", cmd);
+
+        if (strcmp(cmd, "merge") == 0) {
             repl_merge(fd);
-        } else if (strcmp(buffer, "get") == 0) {
+        } else if (strcmp(cmd, "get") == 0) {
             repl_get(fd);
-        } else if (strcmp(buffer, "exec") == 0) {
+        } else if (strcmp(cmd, "exec") == 0) {
             repl_exec(fd);
-        } else if (strcmp(buffer, "delete") == 0) {
-            repl_delete(fd);
-        } else if (strcmp(buffer, "help") == 0) {
+        } else if (strcmp(cmd, "delete") == 0) {
+            uint32_t start, end;
+            sscanf(buffer, "%*s %d %d", &start, &end);
+            repl_delete(fd, start, end);
+        } else if (strcmp(cmd, "help") == 0) {
             repl_help();
-        } else if (strcmp(buffer, "quit") == 0) {
+        } else if (strcmp(cmd, "quit") == 0) {
             close(fd);
             break;
         } else {
