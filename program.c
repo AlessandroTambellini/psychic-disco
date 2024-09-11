@@ -206,6 +206,12 @@ bool inst_decode(char *buffer, OpCode *code)
         *code = MOV;
     } else if (strcmp(buffer, "movi") == 0) {
         *code = MOVI;
+    } else if (strcmp(buffer, "push") == 0) {
+        *code = PUSH;
+    } else if (strcmp(buffer, "pushi") == 0) {
+        *code = PUSHI;
+    } else if (strcmp(buffer, "pop") == 0) {
+        *code = POP;
     } else if (strcmp(buffer, "b") == 0) {
         *code = B;
     } else if (strcmp(buffer, "beq") == 0) {

@@ -4,8 +4,6 @@
 #include "program.h"
 #include "stddef.h"
 
-#define DATA_SIZE 1024
-
 typedef enum {
     OK,
     DATA_OVERFLOW,
@@ -24,23 +22,34 @@ static const char *res_names[] = {
 
 #define CONTEXT_SIZE 64
 
+#define DATA_SIZE 1024
+
+// ABI
+#define RV 0 // vm->data[RV] return value
+#define PC 1 // vm->data[PC] program counter
+#define SP 2 // vm->data[SP] stack pointer
+#define BP 3 // vm->data[BP] base pointer
+#define R1 4 // vm->data[R1] tmp1
+#define R2 5 // vm->data[R2] tmp2
+#define R3 6 // vm->data[R3] tmp3
+#define SB 7 // vm->data[SB] stack base
+
 typedef struct {
     Program *program;
-    int pc;
     int data[DATA_SIZE];
 } Vm;
 
 // Interpreter
 void vm_init(Vm *vm);
 void vm_deinit(Vm *vm);
+void vm_setreg(Vm *vm);
 
 // Memory
-void memory_print(Vm *vm);
+void data_print(Vm *vm);
 
 // Fetch-execute loop
 void loop(Vm *vm);
 bool loopn(Vm *vm);
-void reset(Vm *vm);
 Instruction *fetch(Vm *vm);
 InstResult execute(Vm *vm, Instruction *inst);
 
@@ -58,6 +67,9 @@ InstResult ddiv(Vm *vm, int dest, int arg1, int arg2);
 InstResult divi(Vm *vm, int dest, int arg1, int arg2);
 
 InstResult movi(Vm *vm, int dest, int arg1);
+InstResult push(Vm *vm, int dest);
+InstResult pushi(Vm *vm, int dest);
+InstResult pop(Vm *vm, int dest);
 
 // Control
 InstResult beq(Vm *vm, int dest, int arg1, int arg2);

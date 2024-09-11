@@ -112,7 +112,11 @@ void repl_exec(int fd)
     Response res;
     read_all(fd, &res, sizeof(res.header));
     read_all(fd, res.payload, res.header.size);
-    printf("%d\n", ((int32_t *)res.payload)[0]);
+    for (size_t i = 0; i < res.header.size / sizeof(int32_t); i++) {
+        // printf("[0x%.4zx]: %d\n", i, ((int32_t *)res.payload)[i]);
+        printf("%d ", ((int32_t *)res.payload)[i]);
+    }
+    printf("\n");
 }
 
 void repl_delete(int fd)

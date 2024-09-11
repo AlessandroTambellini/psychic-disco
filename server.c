@@ -152,13 +152,14 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
 bool handle_exec(Conn *conn, Request *req, Response *res)
 {
     printf("EXEC...\n");
-    reset(conn->vm);
+    vm_setreg(conn->vm);
     bool rv = loopn(conn->vm);
     if (rv) {
-        size_t size = MIN(DATA_SIZE * sizeof(conn->vm->data[0]),
-                          PAYLOAD_SIZE * sizeof(res->payload[0]));
+        size_t size = MIN(PAYLOAD_SIZE,                 // Bytes of payload
+                DATA_SIZE * sizeof(conn->vm->data[0])); // Bytes of vm data
+
         res->header.status = SUCCESS;
-        res->header.size = sizeof(int);
+        res->header.size = size;
         memcpy(res->payload, conn->vm->data, size);
     } else {
         printf("Failed to exec program\n");
@@ -172,7 +173,7 @@ bool handle_reset(Conn *conn, Request *req, Response *res)
 {
     printf("RESET...\n");
     bool rv = program_clear(conn->vm->program);
-    reset(conn->vm);
+    vm_setreg(conn->vm);
     if (!rv) {
         printf("Failed to reset program\n");
         res->header.status = FAILURE;
