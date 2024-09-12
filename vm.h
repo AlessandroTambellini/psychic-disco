@@ -20,18 +20,18 @@ static const char *res_names[] = {
 };
 #undef RES_STRING
 
-#define CONTEXT_SIZE 64
+#define CONTEXT_SIZE 999999
 
 #define DATA_SIZE 1024
 
 // ABI
-#define RV 0 // vm->data[RV] return value
-#define PC 1 // vm->data[PC] program counter
-#define SP 2 // vm->data[SP] stack pointer
-#define BP 3 // vm->data[BP] base pointer
-#define R1 4 // vm->data[R1] tmp1
-#define R2 5 // vm->data[R2] tmp2
-#define R3 6 // vm->data[R3] tmp3
+#define R0 0 // vm->data[R0] tmp0 (return value)
+#define R1 1 // vm->data[R1] tmp1
+#define R2 2 // vm->data[R2] tmp2
+#define R3 3 // vm->data[R3] tmp3
+#define PC 4 // vm->data[PC] program counter
+#define SP 5 // vm->data[SP] stack pointer
+#define BP 6 // vm->data[BP] base pointer
 #define SB 7 // vm->data[SB] stack base
 
 typedef struct {

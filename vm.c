@@ -23,7 +23,10 @@ void vm_deinit(Vm *vm)
 
 void vm_setreg(Vm *vm)
 {
-    vm->data[RV] = 0;
+    vm->data[R0] = 0;
+    vm->data[R1] = 0;
+    vm->data[R2] = 0;
+    vm->data[R3] = 0;
     vm->data[PC] = 0;
     vm->data[SP] = SB;
     vm->data[BP] = SB;
@@ -89,6 +92,7 @@ bool loopn(Vm *vm)
 
         // Check if execution exceeded context size
         if (count >= CONTEXT_SIZE) {
+            printf("LOOP INFINITO\n");
             return false;
         }
     }

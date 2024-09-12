@@ -7,6 +7,10 @@ SERVER_NAME=pd-server
 
 all: server client repl
 
+run: server repl
+	./server &
+	./repl
+
 server: server.o program.o vm.o el.o
 	$(CC) $(CFLAGS) -o server server.o program.o vm.o el.o
 

@@ -100,6 +100,9 @@ bool handle_request(Conn *conn)
                 case DELETE:
                     handle_delete(conn, &req, &res);
                     break;
+                case INSP:
+                    handle_insp(conn, &req, &res);
+                    break;
                 default:
                     res.header.status = UNKNOWN_METHOD;
                     res.header.size = 0;
@@ -152,17 +155,15 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
 bool handle_exec(Conn *conn, Request *req, Response *res)
 {
     printf("EXEC...\n");
-    vm_setreg(conn->vm);
-    bool rv = loopn(conn->vm);
+    Vm *vm = conn->vm;
+    vm_setreg(vm);
+    bool rv = loopn(vm);
     if (rv) {
-        size_t size = MIN(PAYLOAD_SIZE,                 // Bytes of payload
-                DATA_SIZE * sizeof(conn->vm->data[0])); // Bytes of vm data
-
         res->header.status = SUCCESS;
-        res->header.size = size;
-        memcpy(res->payload, conn->vm->data, size);
+        res->header.size = sizeof(vm->data[0]);
+        memcpy(res->payload, &vm->data[0], sizeof(vm->data[0]));
     } else {
-        printf("Failed to exec program\n");
+        printf("Failed to execute program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
     }
@@ -173,13 +174,13 @@ bool handle_reset(Conn *conn, Request *req, Response *res)
 {
     printf("RESET...\n");
     bool rv = program_clear(conn->vm->program);
-    vm_setreg(conn->vm);
     if (!rv) {
         printf("Failed to reset program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
         return false;
     }
+    vm_setreg(conn->vm);
 
     res->header.status = SUCCESS;
     res->header.size = 0;
@@ -221,6 +222,27 @@ bool handle_delete(Conn *conn, Request *req, Response *res)
     }
 
     printf("Failed to delete program\n");
+    res->header.status = FAILURE;
+    res->header.size = 0;
+    return false;
+}
+
+bool handle_insp(Conn *conn, Request *req, Response *res)
+{
+    printf("INSP...\n");
+    size_t start = ((uint32_t *)req->payload)[0];
+    size_t size = ((uint32_t *)req->payload)[1];
+    int *data = conn->vm->data;
+    size = MIN(size, PAYLOAD_SIZE / sizeof(data[0]));
+
+    if (start + size < DATA_SIZE) {
+        res->header.status = SUCCESS;
+        res->header.size = size * sizeof(data[0]);
+        memcpy(res->payload, &data[start], res->header.size);
+        return true;
+    }
+
+    printf("Failed to inspect data\n");
     res->header.status = FAILURE;
     res->header.size = 0;
     return false;

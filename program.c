@@ -169,6 +169,50 @@ Instruction *program_fetch(Program *program, size_t index)
     return &program->items[index];
 }
 
+bool program_save(char *filename, Program *program)
+{
+    FILE *f = fopen(filename, "w");
+    if (f == NULL) {
+        return false;
+    }
+
+    for (size_t i = 0; i < program->size; i++) {
+        char buffer[INST_SIZE] = {0};
+        inst_encode(buffer, &program->items[i]);
+        fprintf(f, "%s\n", buffer);
+    }
+
+    fclose(f);
+    return true;
+}
+
+bool program_load(char *filename, Program *program)
+{
+    FILE *f = fopen(filename, "r");
+    if (f == NULL) {
+        return false;
+    }
+
+    while (1) {
+        char buffer[INST_SIZE] = {0};
+        if (fgets(buffer, INST_SIZE, f) == NULL) {
+            break;
+        }
+
+        Instruction inst = {0};
+        bool rv = inst_decode(&inst, buffer);
+        if (!rv) {
+            fclose(f);
+            return false;
+        }
+
+        program_add(program, inst);
+    }
+
+    fclose(f);
+    return true;
+}
+
 void program_print(Program *program)
 {
     Instruction *items = program->items;
@@ -184,7 +228,7 @@ void inst_print(Instruction inst, size_t index)
         inst.dest, inst.arg1, inst.arg2);
 }
 
-bool inst_decode(char *buffer, OpCode *code)
+bool opcode_decode(char *buffer, OpCode *code)
 {
     if (strcmp(buffer, "add") == 0) {
         *code = ADD;
@@ -237,5 +281,22 @@ bool inst_decode(char *buffer, OpCode *code)
     } else {
         return false;
     }
+    return true;
+}
+
+bool inst_decode(Instruction *inst, char *buffer)
+{
+    *inst = (Instruction) {0};
+    char code[OPCODE_SIZE] = {0};
+    sscanf(buffer, "%s %d %d %d", code,
+            &inst->dest, &inst->arg1, &inst->arg2);
+    bool rv = opcode_decode(code, &inst->code);
+    return rv;
+}
+
+bool inst_encode(char *buffer, Instruction *inst)
+{
+    sprintf(buffer, "%s %d %d %d", opcode_of[inst->code],
+            inst->dest, inst->arg1, inst->arg2);
     return true;
 }

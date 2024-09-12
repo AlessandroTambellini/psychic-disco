@@ -59,12 +59,20 @@ const static char *opcode_of[] = {
     [HALT]  = "halt",
 };
 
+// This is the supposed maximum length of a
+// string containing an opcode
+#define OPCODE_SIZE 16
+
 typedef struct {
     uint32_t code; // enum OpCode
     uint32_t dest;
     uint32_t arg1;
     uint32_t arg2;
 } Instruction;
+
+// This is the supposed maximum length of a
+// string containing an instruction
+#define INST_SIZE 128
 
 typedef struct {
     Instruction *items;
@@ -86,9 +94,13 @@ bool program_split(Program *program, Instruction *dst, size_t size);
 size_t program_delete(Program *program, size_t start, size_t size);
 size_t program_get(Program *program, Instruction *dst, size_t start, size_t size);
 bool program_add(Program *program, Instruction inst);
-void program_print(Program *program);
 Instruction *program_fetch(Program *program, size_t index);
+bool program_save(char *filename, Program *program);
+bool program_load(char *filename, Program *program);
+void program_print(Program *program);
 void inst_print(Instruction inst, size_t index);
-bool inst_decode(char *buffer, OpCode *code);
+bool opcode_decode(char *buffer, OpCode *code);
+bool inst_decode(Instruction *inst, char *buffer);
+bool inst_encode(char *buffer, Instruction *inst);
 
 #endif
