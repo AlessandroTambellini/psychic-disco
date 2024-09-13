@@ -8,6 +8,9 @@
 #include "server.h"
 #include "utils.h"
 
+#define CMD_SIZE 64
+#define FILENAME_SIZE 64
+
 void merge_mode(Program *program)
 {
     while (1) {
@@ -89,7 +92,8 @@ void merge_to_local(int fd, Program *program)
 
         read_all(fd, &res, sizeof(res.header));
         read_all(fd, res.payload, res.header.size);
-        program_merge(program, (Instruction *)res.payload, res.header.size / sizeof(Instruction));
+        program_merge(program, (Instruction *)res.payload,
+                res.header.size / sizeof(Instruction));
 
         offset += chunk;
     } while (res.header.size > 0);
@@ -235,7 +239,7 @@ void repl_help()
         "   [0x0000]: 9 0 69420 0\n"
         "   $ exec\n"
         "   69420\n";
-        printf("%s", help);
+    printf("%s", help);
 }
 
 int main()
@@ -258,10 +262,10 @@ int main()
     while (1) {
         printf("$ ");
 
-        char buffer[INST_SIZE] = {0};
-        fgets(buffer, INST_SIZE, stdin);
+        char buffer[CMD_SIZE] = {0};
+        fgets(buffer, CMD_SIZE, stdin);
 
-        char cmd[INST_SIZE] = {0};
+        char cmd[CMD_SIZE] = {0};
         sscanf(buffer, "%s", cmd);
 
         if (strcmp(cmd, "merge") == 0) {
@@ -279,11 +283,11 @@ int main()
             sscanf(buffer, "%*s %d", &size);
             repl_insp(fd, size);
         } else if (strcmp(cmd, "save") == 0) {
-            char filename[INST_SIZE] = {0};
+            char filename[FILENAME_SIZE] = {0};
             sscanf(buffer, "%*s %s", filename);
             repl_save(fd, filename);
         } else if (strcmp(cmd, "load") == 0) {
-            char filename[INST_SIZE] = {0};
+            char filename[FILENAME_SIZE] = {0};
             sscanf(buffer, "%*s %s", filename);
             repl_load(fd, filename);
         } else if (strcmp(cmd, "help") == 0) {
