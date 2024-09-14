@@ -43,7 +43,6 @@ void merge_to_remote(int fd, Program *program)
     while (program_size(program)) {
         size_t n = MIN(program_size(program),
                 PAYLOAD_SIZE/sizeof(Instruction)); // MIN(9, 16);
-
         size_t size = n * sizeof(Instruction);
 
         program_split(program, (Instruction *)req.payload, n);
@@ -70,6 +69,46 @@ void repl_merge(int fd)
     merge_mode(&program);
     merge_to_remote(fd, &program);
 
+    program_deinit(&program);
+}
+
+void insert_to_remote(int fd, Program *program, uint64_t start)
+{
+    Request req;
+    Response res;
+
+    size_t count = 0;
+
+    while (program_size(program)) {
+        size_t n = MIN(program_size(program),
+                (PAYLOAD_SIZE - 2 * sizeof(uint64_t))/sizeof(Instruction));
+        size_t bytes = n * sizeof(Instruction);
+
+        ((uint64_t *)req.payload)[0] = start;
+        ((uint64_t *)req.payload)[1] = n;
+        program_split(program, &((Instruction *)req.payload)[1], n);
+        req.header = (RequestHeader) {
+            .type = INSERT,
+            .size = 2 * sizeof(uint64_t) + bytes,
+        };
+        size_t req_size = sizeof(req.header) + req.header.size;
+        write_all(fd, &req, req_size);
+        start += n;
+        count++;
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        read_all(fd, &res.header, sizeof(res.header));
+        read_all(fd, res.payload, res.header.size);
+    }
+}
+
+void repl_insert(int fd, uint64_t start)
+{
+    Program program;
+    program_init(&program);
+    merge_mode(&program);
+    insert_to_remote(fd, &program, start);
     program_deinit(&program);
 }
 
@@ -266,10 +305,14 @@ int main()
         fgets(buffer, CMD_SIZE, stdin);
 
         char cmd[CMD_SIZE] = {0};
-        sscanf(buffer, "%s", cmd);
+        int rv = sscanf(buffer, "%s", cmd);
 
         if (strcmp(cmd, "merge") == 0) {
             repl_merge(fd);
+        } else if (strcmp(cmd, "insert") == 0) {
+            uint64_t start = 0;
+            sscanf(buffer, "%*s %lld", &start);
+            repl_insert(fd, start);
         } else if (strcmp(cmd, "get") == 0) {
             repl_get(fd);
         } else if (strcmp(cmd, "exec") == 0) {
@@ -295,7 +338,7 @@ int main()
         } else if (strcmp(cmd, "quit") == 0) {
             close(fd);
             break;
-        } else {
+        } else if (rv == 1) {
             fprintf(stderr, "Not a valid command.\n");
         }
     }

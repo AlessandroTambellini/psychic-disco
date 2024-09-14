@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include "program.h"
 
@@ -87,17 +86,42 @@ bool program_copy(Program *program, Program *src)
     return true;
 }
 
+// bool program_merge(Program *program, Instruction *src, size_t size)
+// {
+//     bool rv = program_resize(program, program->capacity + size);
+//     if (!rv) {
+//         return false;
+//     }
+//
+//     Instruction *dst = program->items + program->size;
+//
+//     memcpy(dst, src, size * sizeof(Instruction));
+//     program->size += size;
+//
+//     return true;
+// }
+
 bool program_merge(Program *program, Instruction *src, size_t size)
 {
+    return program_insert(program, src, program->size, size);
+}
+
+bool program_insert(Program *program, Instruction *src, size_t start, size_t size)
+{
+    if (start > program->size) {
+        return false;
+    }
+
     bool rv = program_resize(program, program->capacity + size);
     if (!rv) {
         return false;
     }
 
-    Instruction *dst = program->items + program->size;
-
-    memcpy(dst, src, size * sizeof(Instruction));
     program->size += size;
+    Instruction *dst = program->items + start;
+    // TODO: Don't memmove when merging
+    memmove(dst + size, dst, (program->size - (start + size)) * sizeof(Instruction));
+    memcpy(dst, src, size * sizeof(Instruction));
 
     return true;
 }

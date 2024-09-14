@@ -88,6 +88,9 @@ bool handle_request(Conn *conn)
                 case MERGE:
                     handle_merge(conn, &req, &res);
                     break;
+                case INSERT:
+                    handle_insert(conn, &req, &res);
+                    break;
                 case EXEC:
                     handle_exec(conn, &req, &res);
                     break;
@@ -142,6 +145,28 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
     bool rv = program_merge(program, (Instruction *)req->payload, n);
     if (!rv) {
         printf("Failed to merge program\n");
+        res->header.status = FAILURE;
+        res->header.size = 0;
+        return false;
+    }
+
+    res->header.status = SUCCESS;
+    res->header.size = 0;
+    return true;
+}
+
+bool handle_insert(Conn *conn, Request *req, Response *res)
+{
+    printf("INSERT...\n");
+    Instruction *insts = (Instruction *)req->payload;
+    uint64_t start = ((uint64_t *)insts)[0];
+    uint64_t size = ((uint64_t *)insts)[1];
+
+    Instruction *src = &insts[1];
+    Program *program = conn->vm->program;
+    bool rv = program_insert(program, src, start, size);
+    if (!rv) {
+        printf("Failed to insert to program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
         return false;

@@ -90,6 +90,7 @@ bool program_inc_capacity(Program *program);
 bool program_clear(Program *program);
 bool program_copy(Program *program, Program *src);
 bool program_merge(Program *program, Instruction *src, size_t size);
+bool program_insert(Program *program, Instruction *src, size_t start, size_t size);
 bool program_split(Program *program, Instruction *dst, size_t size);
 size_t program_delete(Program *program, size_t start, size_t size);
 size_t program_get(Program *program, Instruction *dst, size_t start, size_t size);

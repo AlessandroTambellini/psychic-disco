@@ -16,6 +16,7 @@
 
 typedef enum {
     MERGE,
+    INSERT,
     EXEC,
     RESET,
     GET,
@@ -52,6 +53,7 @@ typedef struct {
 bool handle_connection(Conn *conn);
 bool handle_request(Conn *conn);
 bool handle_merge(Conn *conn, Request *req, Response *res);
+bool handle_insert(Conn *conn, Request *req, Response *res);
 bool handle_exec(Conn *conn, Request *req, Response *res);
 bool handle_reset(Conn *conn, Request *req, Response *res);
 bool handle_get(Conn *conn, Request *req, Response *res);

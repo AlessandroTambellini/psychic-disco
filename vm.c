@@ -92,7 +92,7 @@ bool loopn(Vm *vm)
 
         // Check if execution exceeded context size
         if (count >= CONTEXT_SIZE) {
-            printf("LOOP INFINITO\n");
+            printf("An infinite loop was detected\n");
             return false;
         }
     }
