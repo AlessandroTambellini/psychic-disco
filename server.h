@@ -1,17 +1,10 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
-#include <assert.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#ifndef SERVER_H
+#define SERVER_H
 
 #include "el.h"
 
 // PAYLOAD_SIZE should be a value greater than sizeof(Instruction)
 // defined in program.h which, as of now, is 16 bytes
-// TODO: handle cases where PAYLOAD_SIZE is not a multiple of
-// sizeof(Instruction)
 #define PAYLOAD_SIZE (2 * sizeof(Instruction))
 
 typedef enum {
@@ -60,3 +53,5 @@ bool handle_get(Conn *conn, Request *req, Response *res);
 bool handle_delete(Conn *conn, Request *req, Response *res);
 bool handle_insp(Conn *conn, Request *req, Response *res);
 bool handle_response(Conn *conn);
+
+#endif
