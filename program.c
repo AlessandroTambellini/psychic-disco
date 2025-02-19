@@ -86,21 +86,6 @@ bool program_copy(Program *program, Program *src)
     return true;
 }
 
-// bool program_merge(Program *program, Instruction *src, size_t size)
-// {
-//     bool rv = program_resize(program, program->capacity + size);
-//     if (!rv) {
-//         return false;
-//     }
-//
-//     Instruction *dst = program->items + program->size;
-//
-//     memcpy(dst, src, size * sizeof(Instruction));
-//     program->size += size;
-//
-//     return true;
-// }
-
 bool program_merge(Program *program, Instruction *src, size_t size)
 {
     return program_insert(program, src, program->size, size);
@@ -323,4 +308,12 @@ bool inst_encode(char *buffer, Instruction *inst)
     sprintf(buffer, "%s %d %d %d", opcode_of[inst->code],
             inst->dest, inst->arg1, inst->arg2);
     return true;
+}
+
+bool inst_eq(Instruction *inst1, Instruction *inst2)
+{
+    return inst1->code == inst2->code
+        && inst1->dest == inst2->dest
+        && inst1->arg1 == inst2->arg1
+        && inst1->arg2 == inst2->arg2;
 }

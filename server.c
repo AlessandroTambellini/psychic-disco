@@ -303,7 +303,7 @@ bool handle_response(Conn *conn)
     return true;
 }
 
-int main()
+void start_server()
 {
     // 1) socket()
     int welcfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -366,16 +366,17 @@ int main()
             int connfd = accept(welcfd, (struct sockaddr *)&client_addr, &socklen);
             if (connfd < 0) {
                 printf("Failed to accept new connection\n");
-                return -1;
+                exit(1);
             }
 
             set_nonblocking(connfd);
 
             el_add(&el, connfd);
         }
-
-        // el_print(&el);
     }
+}
 
-    return 0;
+int main()
+{
+    start_server();
 }

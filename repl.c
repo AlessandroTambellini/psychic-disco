@@ -311,7 +311,7 @@ int main()
             repl_merge(fd);
         } else if (strcmp(cmd, "insert") == 0) {
             uint64_t start = 0;
-            sscanf(buffer, "%*s %lld", &start);
+            sscanf(buffer, "%*s %ld", &start);
             repl_insert(fd, start);
         } else if (strcmp(cmd, "get") == 0) {
             repl_get(fd);

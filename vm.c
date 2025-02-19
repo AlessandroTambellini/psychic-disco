@@ -33,7 +33,7 @@ void vm_setreg(Vm *vm)
 }
 
 // Memory
-void memory_print(Vm *vm)
+void memory_dump(Vm *vm)
 {
     int limit = 16;
     for (int i = 0; i < limit && i < DATA_SIZE; i++) {
@@ -48,6 +48,7 @@ void loop(Vm *vm)
     while (vm->data[PC] < program_size(vm->program)) {
         // Fetch instruction
         inst = fetch(vm);
+        inst_print(*inst, 0);
 
         // Increment program counter
         vm->data[PC]++;

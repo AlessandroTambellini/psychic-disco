@@ -103,5 +103,6 @@ void inst_print(Instruction inst, size_t index);
 bool opcode_decode(char *buffer, OpCode *code);
 bool inst_decode(Instruction *inst, char *buffer);
 bool inst_encode(char *buffer, Instruction *inst);
+bool inst_eq(Instruction *inst1, Instruction *inst2);
 
 #endif

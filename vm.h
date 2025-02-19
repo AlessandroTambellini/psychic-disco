@@ -45,7 +45,7 @@ void vm_deinit(Vm *vm);
 void vm_setreg(Vm *vm);
 
 // Memory
-void data_print(Vm *vm);
+void memory_dump(Vm *vm);
 
 // Fetch-execute loop
 void loop(Vm *vm);
@@ -58,7 +58,6 @@ InstResult execute(Vm *vm, Instruction *inst);
 InstResult add(Vm *vm, int dest, int arg1, int arg2);
 InstResult addi(Vm *vm, int dest, int arg1, int arg2);
 InstResult sub(Vm *vm, int dest, int arg1, int arg2);
-InstResult subi(Vm *vm, int dest, int arg1, int arg2);
 InstResult subi(Vm *vm, int dest, int arg1, int arg2);
 InstResult mul(Vm *vm, int dest, int arg1, int arg2);
 InstResult muli(Vm *vm, int dest, int arg1, int arg2);

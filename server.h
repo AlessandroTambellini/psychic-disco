@@ -53,5 +53,6 @@ bool handle_get(Conn *conn, Request *req, Response *res);
 bool handle_delete(Conn *conn, Request *req, Response *res);
 bool handle_insp(Conn *conn, Request *req, Response *res);
 bool handle_response(Conn *conn);
+void start_server();
 
 #endif
