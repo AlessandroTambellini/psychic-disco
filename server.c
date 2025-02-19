@@ -88,6 +88,9 @@ bool handle_request(Conn *conn)
                 case MERGE:
                     handle_merge(conn, &req, &res);
                     break;
+                case INSERT:
+                    handle_insert(conn, &req, &res);
+                    break;
                 case EXEC:
                     handle_exec(conn, &req, &res);
                     break;
@@ -99,6 +102,9 @@ bool handle_request(Conn *conn)
                     break;
                 case DELETE:
                     handle_delete(conn, &req, &res);
+                    break;
+                case INSP:
+                    handle_insp(conn, &req, &res);
                     break;
                 default:
                     res.header.status = UNKNOWN_METHOD;
@@ -131,6 +137,7 @@ bool handle_request(Conn *conn)
 
 bool handle_merge(Conn *conn, Request *req, Response *res)
 {
+    printf("MERGE...\n");
     size_t bytes = req->header.size;
     size_t n = bytes / sizeof(Instruction);
 
@@ -148,15 +155,40 @@ bool handle_merge(Conn *conn, Request *req, Response *res)
     return true;
 }
 
+bool handle_insert(Conn *conn, Request *req, Response *res)
+{
+    printf("INSERT...\n");
+    Instruction *insts = (Instruction *)req->payload;
+    uint64_t start = ((uint64_t *)insts)[0];
+    uint64_t size = ((uint64_t *)insts)[1];
+
+    Instruction *src = &insts[1];
+    Program *program = conn->vm->program;
+    bool rv = program_insert(program, src, start, size);
+    if (!rv) {
+        printf("Failed to insert to program\n");
+        res->header.status = FAILURE;
+        res->header.size = 0;
+        return false;
+    }
+
+    res->header.status = SUCCESS;
+    res->header.size = 0;
+    return true;
+}
+
 bool handle_exec(Conn *conn, Request *req, Response *res)
 {
-    bool rv = loopn(conn->vm);
+    printf("EXEC...\n");
+    Vm *vm = conn->vm;
+    vm_setreg(vm);
+    bool rv = loopn(vm);
     if (rv) {
-        size_t size = MIN(DATA_SIZE, PAYLOAD_SIZE);
         res->header.status = SUCCESS;
-        res->header.size = size;
-        memcpy(res->payload, conn->vm->data, size);
+        res->header.size = sizeof(vm->data[0]);
+        memcpy(res->payload, &vm->data[0], sizeof(vm->data[0]));
     } else {
+        printf("Failed to execute program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
     }
@@ -165,13 +197,15 @@ bool handle_exec(Conn *conn, Request *req, Response *res)
 
 bool handle_reset(Conn *conn, Request *req, Response *res)
 {
-    Program *program = conn->vm->program;
-    bool rv = program_clear(program);
+    printf("RESET...\n");
+    bool rv = program_clear(conn->vm->program);
     if (!rv) {
+        printf("Failed to reset program\n");
         res->header.status = FAILURE;
         res->header.size = 0;
         return false;
     }
+    vm_setreg(conn->vm);
 
     res->header.status = SUCCESS;
     res->header.size = 0;
@@ -180,38 +214,63 @@ bool handle_reset(Conn *conn, Request *req, Response *res)
 
 bool handle_get(Conn *conn, Request *req, Response *res)
 {
+    printf("GET...\n");
     size_t start = ((uint32_t *)req->payload)[0];
     size_t size = ((uint32_t *)req->payload)[1];
     size = MIN(size, PAYLOAD_SIZE / sizeof(Instruction));
 
     Program *program = conn->vm->program;
-    bool rv = program_get(program, (Instruction *)res->payload, start, size);
-    if (!rv) {
-        res->header.status = FAILURE;
-        res->header.size = 0;
-        return false;
+    size_t n = program_get(program, (Instruction *)res->payload, start, size);
+    if (n) {
+        res->header.status = SUCCESS;
+        res->header.size = n * sizeof(Instruction);
+        return true;
     }
 
-    res->header.status = SUCCESS;
-    res->header.size = size * sizeof(Instruction);
-    return true;
+    res->header.status = FAILURE;
+    res->header.size = 0;
+    return false;
 }
 
 bool handle_delete(Conn *conn, Request *req, Response *res)
 {
+    printf("DELETE...\n");
     size_t start = ((uint32_t *)req->payload)[0];
     size_t size = ((uint32_t *)req->payload)[1];
     Program *program = conn->vm->program;
-    bool rv = program_delete(program, start, size);
-    if (!rv) {
-        res->header.status = FAILURE;
-        res->header.size = 0;
-        return false;
+    uint32_t n = program_delete(program, start, size);
+    if (n) {
+        res->header.status = SUCCESS;
+        res->header.size = sizeof(n);
+        ((uint32_t *)res->payload)[0] = n;
+        return true;
     }
 
-    res->header.status = SUCCESS;
+    printf("Failed to delete program\n");
+    res->header.status = FAILURE;
     res->header.size = 0;
-    return true;
+    return false;
+}
+
+bool handle_insp(Conn *conn, Request *req, Response *res)
+{
+    printf("INSP...\n");
+    size_t start = ((uint32_t *)req->payload)[0];
+    size_t size = ((uint32_t *)req->payload)[1];
+    int *data = conn->vm->data;
+    size = MIN(size, PAYLOAD_SIZE / sizeof(data[0]));
+
+    if (start + size < DATA_SIZE) {
+        res->header.status = SUCCESS;
+        res->header.size = size * sizeof(data[0]);
+        memcpy(res->payload, &data[start], res->header.size);
+        return true;
+    }
+
+    printf("Failed to inspect data\n");
+    res->header.status = FAILURE;
+    res->header.size = 0;
+    return false;
 }
 
 bool handle_response(Conn *conn)
@@ -257,7 +316,8 @@ int main()
     // 2) bind()
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(8080);
+    uint16_t port = 8080;
+    addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(0);
     int rv = bind(welcfd, (struct sockaddr *)&addr, sizeof(addr));
     if (rv < 0)
@@ -267,6 +327,8 @@ int main()
     listen(welcfd, SOMAXCONN);
     if (rv < 0)
         die("Failed to listen from welcome socket\n");
+    else
+        printf("Listening on port %d...\n", port);
 
     set_nonblocking(welcfd);
 

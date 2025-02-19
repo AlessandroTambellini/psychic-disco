@@ -1,23 +1,20 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
-#include <assert.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#ifndef SERVER_H
+#define SERVER_H
 
 #include "el.h"
 
 // PAYLOAD_SIZE should be a value greater than sizeof(Instruction)
 // defined in program.h which, as of now, is 16 bytes
-#define PAYLOAD_SIZE 2 * 16
+#define PAYLOAD_SIZE (2 * sizeof(Instruction))
 
 typedef enum {
     MERGE,
+    INSERT,
     EXEC,
     RESET,
     GET,
     DELETE,
+    INSP,
 } Method;
 
 typedef struct {
@@ -27,7 +24,7 @@ typedef struct {
 
 typedef struct {
     RequestHeader header;
-    int8_t payload[PAYLOAD_SIZE];
+    uint8_t payload[PAYLOAD_SIZE];
 } Request;
 
 typedef enum {
@@ -43,14 +40,18 @@ typedef struct {
 
 typedef struct {
     ResponseHeader header;
-    int8_t payload[PAYLOAD_SIZE];
+    uint8_t payload[PAYLOAD_SIZE];
 } Response;
 
 bool handle_connection(Conn *conn);
 bool handle_request(Conn *conn);
 bool handle_merge(Conn *conn, Request *req, Response *res);
+bool handle_insert(Conn *conn, Request *req, Response *res);
 bool handle_exec(Conn *conn, Request *req, Response *res);
 bool handle_reset(Conn *conn, Request *req, Response *res);
 bool handle_get(Conn *conn, Request *req, Response *res);
 bool handle_delete(Conn *conn, Request *req, Response *res);
+bool handle_insp(Conn *conn, Request *req, Response *res);
 bool handle_response(Conn *conn);
+
+#endif

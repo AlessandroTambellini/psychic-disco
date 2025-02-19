@@ -10,13 +10,26 @@ void vm_init(Vm *vm)
     Program *program = (Program *)malloc(sizeof(Program));
     program_init(program);
     vm->program = program;
-    vm->pc = 0;
+
+    // Setup registers
+    vm_setreg(vm);
 }
 
 void vm_deinit(Vm *vm)
 {
     program_deinit(vm->program);
     free(vm->program);
+}
+
+void vm_setreg(Vm *vm)
+{
+    vm->data[R0] = 0;
+    vm->data[R1] = 0;
+    vm->data[R2] = 0;
+    vm->data[R3] = 0;
+    vm->data[PC] = 0;
+    vm->data[SP] = SB;
+    vm->data[BP] = SB;
 }
 
 // Memory
@@ -32,19 +45,19 @@ void memory_print(Vm *vm)
 void loop(Vm *vm)
 {
     Instruction *inst;
-    while (vm->pc < program_size(vm->program)) {
+    while (vm->data[PC] < program_size(vm->program)) {
         // Fetch instruction
         inst = fetch(vm);
 
         // Increment program counter
-        vm->pc++;
+        vm->data[PC]++;
 
         // Execute instruction
         InstResult res = execute(vm, inst);
 
         // Handle result
         if (res != OK) {
-            printf("Error: %s at instruction %d\n", res_names[res], vm->pc);
+            printf("Error: %s at instruction %d\n", res_names[res], vm->data[PC]);
             break;
         }
     }
@@ -60,7 +73,7 @@ bool loopn(Vm *vm)
         inst = fetch(vm);
 
         // Increment program counter
-        vm->pc++;
+        vm->data[PC]++;
         count++;
 
         // Execute instruction
@@ -68,17 +81,18 @@ bool loopn(Vm *vm)
 
         // Handle result
         if (res != OK) {
-            printf("Error: %s at instruction %d\n", res_names[res], vm->pc);
+            printf("Error: %s at instruction %d\n", res_names[res], vm->data[PC]);
             break;
         }
 
         // Check if program finished
-        if (vm->pc >= program_size(vm->program)) {
+        if (vm->data[PC] >= program_size(vm->program)) {
             return true;
         }
 
         // Check if execution exceeded context size
         if (count >= CONTEXT_SIZE) {
+            printf("An infinite loop was detected\n");
             return false;
         }
     }
@@ -86,11 +100,9 @@ bool loopn(Vm *vm)
     return true;
 }
 
-
 Instruction *fetch(Vm *vm)
 {
-    size_t pc = vm->pc;
-    return program_fetch(vm->program, pc);
+    return program_fetch(vm->program, vm->data[PC]);
 }
 
 // Pointer to interpreter cause we need
@@ -103,69 +115,30 @@ InstResult execute(Vm *vm, Instruction *inst)
 
     InstResult res;
     switch (inst->code) {
-    case ADD:
-        res = add(vm, dest, arg1, arg2);
-        break;
-    case ADDI:
-        res = addi(vm, dest, arg1, arg2);
-        break;
-    case SUB:
-        res = sub(vm, dest, arg1, arg2);
-        break;
-    case SUBI:
-        res = subi(vm, dest, arg1, arg2);
-        break;
-    case MUL:
-        res = mul(vm, dest, arg1, arg2);
-        break;
-    case MULI:
-        res = muli(vm, dest, arg1, arg2);
-        break;
-    case DIV:
-        res = ddiv(vm, dest, arg1, arg2);
-        break;
-    case DIVI:
-        res = divi(vm, dest, arg1, arg2);
-        break;
-    case MOV:
-        res = addi(vm, dest, arg1, 0);
-        break;
-    case MOVI:
-        res = movi(vm, dest, arg1);
-        break;
-    case B:
-        res = beq(vm, dest, 0, 0);
-        break;
-    case BEQ:
-        res = beq(vm, dest, arg1, arg2);
-        break;
-    case BEQI:
-        res = beqi(vm, dest, arg1, arg2);
-        break;
-    case BNE:
-        res = bne(vm, dest, arg1, arg2);
-        break;
-    case BNEI:
-        res = bnei(vm, dest, arg1, arg2);
-        break;
-    case BGE:
-        res = bge(vm, dest, arg1, arg2);
-        break;
-    case BGEI:
-        res = bgei(vm, dest, arg1, arg2);
-        break;
-    case BLEI:
-        res = bgei(vm, dest, arg2, arg1);
-        break;
-    case RET:
-        res = ret(vm, dest);
-        break;
-    case RETI:
-        res = reti(vm, dest);
-        break;
-    case HALT:
-        res = halt(vm);
-        break;
+    case ADD:   res = add(vm, dest, arg1, arg2); break;
+    case ADDI:  res = addi(vm, dest, arg1, arg2); break;
+    case SUB:   res = sub(vm, dest, arg1, arg2); break;
+    case SUBI:  res = subi(vm, dest, arg1, arg2); break;
+    case MUL:   res = mul(vm, dest, arg1, arg2); break;
+    case MULI:  res = muli(vm, dest, arg1, arg2); break;
+    case DIV:   res = ddiv(vm, dest, arg1, arg2); break;
+    case DIVI:  res = divi(vm, dest, arg1, arg2); break;
+    case MOV:   res = addi(vm, dest, arg1, 0); break;
+    case MOVI:  res = movi(vm, dest, arg1); break;
+    case PUSH:  res = push(vm, dest); break;
+    case PUSHI: res = pushi(vm, dest); break;
+    case POP:   res = pop(vm, dest); break;
+    case B:     res = beq(vm, dest, 0, 0); break;
+    case BEQ:   res = beq(vm, dest, arg1, arg2); break;
+    case BEQI:  res = beqi(vm, dest, arg1, arg2); break;
+    case BNE:   res = bne(vm, dest, arg1, arg2); break;
+    case BNEI:  res = bnei(vm, dest, arg1, arg2); break;
+    case BGE:   res = bge(vm, dest, arg1, arg2); break;
+    case BGEI:  res = bgei(vm, dest, arg1, arg2); break;
+    case BLEI:  res = bgei(vm, dest, arg2, arg1); break;
+    case RET:   res = ret(vm, dest); break;
+    case RETI:  res = reti(vm, dest); break;
+    case HALT:  res = halt(vm); break;
     default:
         res = MALFORMED_INSTRUCTION;
         break;
@@ -175,13 +148,16 @@ InstResult execute(Vm *vm, Instruction *inst)
 }
 
 #define CHECK_DATA_BOUNDS(arg) \
-    arg >= 0 && arg < DATA_SIZE
+        arg >= 0 && arg < DATA_SIZE
 
 #define CHECK_DATA_BOUNDS_2(arg1, arg2) \
-    arg1 >= 0 && arg1 < DATA_SIZE && arg2 >= 0 && arg2 < DATA_SIZE
+        arg1 >= 0 && arg1 < DATA_SIZE \
+     && arg2 >= 0 && arg2 < DATA_SIZE
 
 #define CHECK_DATA_BOUNDS_3(arg1, arg2, arg3) \
-    arg1 >= 0 && arg1 < DATA_SIZE && arg2 >= 0 && arg2 < DATA_SIZE && arg3 >= 0 && arg3 < DATA_SIZE
+        arg1 >= 0 && arg1 < DATA_SIZE \
+     && arg2 >= 0 && arg2 < DATA_SIZE \
+     && arg3 >= 0 && arg3 < DATA_SIZE
 
 // Instructions
 InstResult add(Vm *vm, int dest, int arg1, int arg2)
@@ -273,8 +249,42 @@ InstResult divi(Vm *vm, int dest, int arg1, int arg2)
 
 InstResult movi(Vm *vm, int dest, int arg1)
 {
-    if (CHECK_DATA_BOUNDS_2(dest, arg1)) {
+    if (CHECK_DATA_BOUNDS(dest)) {
         vm->data[dest] = arg1;
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult push(Vm *vm, int dest)
+{
+    if (CHECK_DATA_BOUNDS_2(vm->data[SP], dest)) {
+        vm->data[vm->data[SP]] = vm->data[dest];
+        vm->data[SP]++;
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult pushi(Vm *vm, int dest)
+{
+    if (CHECK_DATA_BOUNDS(vm->data[SP])) {
+        vm->data[vm->data[SP]] = dest;
+        vm->data[SP]++;
+        return OK;
+    }
+
+    return DATA_OVERFLOW;
+}
+
+InstResult pop(Vm *vm, int dest)
+{
+    if (CHECK_DATA_BOUNDS(dest)
+        && vm->data[SP] > 0) {
+        vm->data[SP]--;
+        vm->data[dest] = vm->data[vm->data[SP]];
         return OK;
     }
 
@@ -286,9 +296,9 @@ InstResult beq(Vm *vm, int dest, int arg1, int arg2)
     if (CHECK_DATA_BOUNDS_2(arg1, arg2)
         && dest < program_size(vm->program)) {
         if (arg1 == arg2)
-            vm->pc = dest;
+            vm->data[PC] = dest;
         else if (vm->data[arg1] == vm->data[arg2])
-            vm->pc = dest;
+            vm->data[PC] = dest;
 
         return OK;
     }
@@ -301,7 +311,7 @@ InstResult beqi(Vm *vm, int dest, int arg1, int arg2)
     if (CHECK_DATA_BOUNDS(arg1)
         && dest < program_size(vm->program)) {
         if (vm->data[arg1] == arg2)
-            vm->pc = dest;
+            vm->data[PC] = dest;
 
         return OK;
     }
@@ -314,7 +324,7 @@ InstResult bne(Vm *vm, int dest, int arg1, int arg2)
     if (CHECK_DATA_BOUNDS_2(arg1, arg2)
         && dest < program_size(vm->program)) {
         if (vm->data[arg1] != vm->data[arg2])
-            vm->pc = dest;
+            vm->data[PC] = dest;
 
         return OK;
     }
@@ -327,7 +337,7 @@ InstResult bnei(Vm *vm, int dest, int arg1, int arg2)
     if (CHECK_DATA_BOUNDS(arg1)
         && dest < program_size(vm->program)) {
         if (vm->data[arg1] != arg2)
-            vm->pc = dest;
+            vm->data[PC] = dest;
 
         return OK;
     }
@@ -340,7 +350,7 @@ InstResult bge(Vm *vm, int dest, int arg1, int arg2)
     if (CHECK_DATA_BOUNDS_2(arg1, arg2)
         && dest < program_size(vm->program)) {
         if (vm->data[arg1] >= vm->data[arg2])
-            vm->pc = dest;
+            vm->data[PC] = dest;
 
         return OK;
     }
@@ -353,7 +363,7 @@ InstResult bgei(Vm *vm, int dest, int arg1, int arg2)
     if (CHECK_DATA_BOUNDS(arg1)
         && dest < program_size(vm->program)) {
         if (vm->data[arg1] >= arg2)
-            vm->pc = dest;
+            vm->data[PC] = dest;
 
         return OK;
     }
@@ -379,7 +389,7 @@ InstResult reti(Vm *vm, int dest)
 
 InstResult halt(Vm *vm)
 {
-    vm->pc = program_size(vm->program);
+    vm->data[PC] = program_size(vm->program);
     return OK;
 }
 
