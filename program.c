@@ -104,8 +104,12 @@ bool program_insert(Program *program, Instruction *src, size_t start, size_t siz
 
     program->size += size;
     Instruction *dst = program->items + start;
-    // TODO: Don't memmove when merging
-    memmove(dst + size, dst, (program->size - (start + size)) * sizeof(Instruction));
+
+    // Don't memmove when merging
+    if (start < program->size) {
+        memmove(dst + size, dst, (program->size - (start + size)) * sizeof(Instruction));
+    }
+
     memcpy(dst, src, size * sizeof(Instruction));
 
     return true;
@@ -238,7 +242,7 @@ void inst_print(Instruction inst, size_t index)
 
 void inst_print_curr(Instruction inst, size_t index)
 {
-    printf("** [0x%.4zx]: %s %i %i %i **\n", index, opcode_of[inst.code], inst.dest, inst.arg1, inst.arg2);
+    printf("*[0x%.4zx]: %s %i %i %i\n", index, opcode_of[inst.code], inst.dest, inst.arg1, inst.arg2);
 }
 
 bool opcode_decode(char *buffer, OpCode *code)

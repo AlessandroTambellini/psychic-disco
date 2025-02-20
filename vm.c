@@ -122,7 +122,7 @@ bool loop_dbg(Vm *vm)
         return true;
     }
 
-    printf("Program dump\n");
+    printf("Program dump:\n");
     Instruction *items = vm->program->items;
     for (size_t i = 0; i < vm->program->size; i++) {
         if (vm->data[PC] == i)
@@ -131,7 +131,7 @@ bool loop_dbg(Vm *vm)
             inst_print(items[i], i);
     }
 
-    printf("Memory dump\n");
+    printf("Memory dump:\n");
     memory_dump(vm);
 
     return true;

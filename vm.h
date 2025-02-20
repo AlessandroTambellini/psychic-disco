@@ -50,6 +50,7 @@ void memory_dump(Vm *vm);
 // Fetch-execute loop
 void loop(Vm *vm);
 bool loopn(Vm *vm);
+bool loop_dbg(Vm *vm);
 Instruction *fetch(Vm *vm);
 InstResult execute(Vm *vm, Instruction *inst);
 

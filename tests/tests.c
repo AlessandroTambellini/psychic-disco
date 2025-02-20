@@ -116,6 +116,6 @@ void test_program_fibonacci()
 
 int main()
 {
-    test_program_factorial();
+    /*test_program_factorial();*/
     test_program_fibonacci();
 }
