@@ -233,8 +233,12 @@ void program_print(Program *program)
 
 void inst_print(Instruction inst, size_t index)
 {
-    printf("[0x%.4zx]: %s %i %i %i\n", index, opcode_of[inst.code],
-        inst.dest, inst.arg1, inst.arg2);
+    printf("[0x%.4zx]: %s %i %i %i\n", index, opcode_of[inst.code], inst.dest, inst.arg1, inst.arg2);
+}
+
+void inst_print_curr(Instruction inst, size_t index)
+{
+    printf("** [0x%.4zx]: %s %i %i %i **\n", index, opcode_of[inst.code], inst.dest, inst.arg1, inst.arg2);
 }
 
 bool opcode_decode(char *buffer, OpCode *code)

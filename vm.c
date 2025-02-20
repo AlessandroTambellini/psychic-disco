@@ -101,6 +101,42 @@ bool loopn(Vm *vm)
     return true;
 }
 
+bool loop_dbg(Vm *vm)
+{
+    // Fetch instruction
+    Instruction *inst = fetch(vm);
+
+    // Increment program counter
+    vm->data[PC]++;
+
+    // Execute instruction
+    InstResult res = execute(vm, inst);
+
+    // Handle result
+    if (res != OK) {
+        printf("Error: %s at instruction %d\n", res_names[res], vm->data[PC]);
+    }
+
+    // Check if program finished
+    if (vm->data[PC] >= program_size(vm->program)) {
+        return true;
+    }
+
+    printf("Program dump\n");
+    Instruction *items = vm->program->items;
+    for (size_t i = 0; i < vm->program->size; i++) {
+        if (vm->data[PC] == i)
+            inst_print_curr(items[i], i);
+        else
+            inst_print(items[i], i);
+    }
+
+    printf("Memory dump\n");
+    memory_dump(vm);
+
+    return true;
+}
+
 Instruction *fetch(Vm *vm)
 {
     return program_fetch(vm->program, vm->data[PC]);

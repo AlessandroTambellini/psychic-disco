@@ -100,6 +100,7 @@ bool program_save(char *filename, Program *program);
 bool program_load(char *filename, Program *program);
 void program_print(Program *program);
 void inst_print(Instruction inst, size_t index);
+void inst_print_curr(Instruction inst, size_t index);
 bool opcode_decode(char *buffer, OpCode *code);
 bool inst_decode(Instruction *inst, char *buffer);
 bool inst_encode(char *buffer, Instruction *inst);

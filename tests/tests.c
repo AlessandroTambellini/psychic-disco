@@ -14,7 +14,7 @@
 
 void test_program_factorial()
 {
-    const int n = 10;
+    const int n = 99999;
     int expected = 1;
     int m = n;
     while (m) expected *= m--;
@@ -51,13 +51,71 @@ void test_program_factorial()
     }
 
     // Assert termination
-    assert(loopn(&vm));
+    assert(loopn(&vm) && "Vm took to many cycles");
 
     // Assert first element is factorial
-    assert(vm.data[0] == expected);
+    assert(vm.data[0] == expected && "Factorial computation result is not correct");
+}
+
+void test_program_fibonacci()
+{
+    const int n = 99999;
+    int m = n;
+    int first = 1, expected = 1;
+    while (--m > 1) {
+        int tmp = expected + first;
+        first = expected;
+        expected = tmp;
+    }
+
+    Vm vm;
+    vm_init(&vm);
+
+    Program program;
+    program_init(&program);
+
+    Instruction i0  = { MOVI,    R0, n };
+    Instruction i1  = { MOVI,    R1, 1 };
+    Instruction i2  = { MOVI,    R2, 1 };
+    Instruction i3  = { SUBI,    R0, R0, 1 };
+    Instruction i4  = { ADD,     R3, R1, R2 };
+    Instruction i5  = { MOV,     R1, R2 };
+    Instruction i6  = { MOV,     R2, R3 };
+    Instruction i7  = { BEQI,    9, R0, 2 };
+    Instruction i8  = { B,       3 };
+    Instruction i9  = { MOV,     R0, R2 };
+    Instruction i10 = { HALT };
+
+    program_add(&program, i0);
+    program_add(&program, i1);
+    program_add(&program, i2);
+    program_add(&program, i3);
+    program_add(&program, i4);
+    program_add(&program, i5);
+    program_add(&program, i6);
+    program_add(&program, i7);
+    program_add(&program, i8);
+    program_add(&program, i9);
+    program_add(&program, i10);
+
+    program_merge(vm.program, program.items, program.size);
+
+    // Assert equality of the two programs
+    for (size_t i = 0; i < program.size; i++) {
+        Instruction *pi1 = program_fetch(vm.program, i);
+        Instruction *pi2 = program_fetch(&program, i);
+        assert(inst_eq(pi1, pi2));
+    }
+
+    // Assert termination
+    assert(loopn(&vm) && "Vm took to many cycles");
+
+    // Assert first element is fibonacci
+    assert(vm.data[0] == expected && "Fibonacci computation result is not correct");
 }
 
 int main()
 {
     test_program_factorial();
+    test_program_fibonacci();
 }
